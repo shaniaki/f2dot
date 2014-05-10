@@ -39,8 +39,8 @@ from parsers import ForsydeModelParser
 def main():
 	parser = argparse.ArgumentParser(version='f2dot 0.1', description='f2dot - a ForSyDe DOT plotter.')
 	required = parser.add_mutually_exclusive_group(required=True)	
-	required.add_argument("-i", "--input", help="Input file containing the top module.")
-	required.add_argument("-g", "--generate_config", help="Generates a defaut config file in the current folder.", action="store_true")
+	required.add_argument("input", nargs='?', help="Input file containing the top module.")
+	required.add_argument("-g", "--generate_config", help="Generates a defaut config file in the current folder and exits.", action="store_true")
 	parser.add_argument("-d", "--debug", help="Terminal debug.", action='store_true')
 	parser.add_argument("-l", "--log", help="Write a detailed log in the input folder.", action='store_true')
 	parser.add_argument("-o", "--output", help="Path to the output folder. If none specified, the output graph will be generated in the same folder as the input.")
