@@ -1,0 +1,11 @@
+The source files are Python scripts which have the following dependencies:
+ * a Python interpreter (python >= 2.7)
+ * the argparse library
+ * the dom library
+ * the GraphViz toolset with the pygraphviz library
+
+The project can be distributed with toolsets like pyinstaller (http://www.pyinstaller.org/) or distutils (https://docs.python.org/2/distutils/)
+
+The program usage is displayed running the script 'f2dot' with the argument '-h' with a python interpreter:
+
+$ python f2dot -h
