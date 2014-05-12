@@ -29,6 +29,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    utils.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: provide general utility functions for string or list 
+            manipulation 
+ * License: BSD3
+'''
+
 import re
 
 def strBeforeAfter(line,pattern):
@@ -81,3 +90,11 @@ def computeBackground(coeffs, level):
 		+ re.sub('0x','',hex(255 - coeffs[1] * level)) \
 		+ re.sub('0x','',hex(255 - coeffs[2] * level))
 	return bgHex
+
+def text(lst):
+	txt = ''
+	for i in lst:
+		txt = txt + str(i) + ', '
+	if txt:
+		txt = txt[:-2]
+	return txt

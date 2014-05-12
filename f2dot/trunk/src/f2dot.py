@@ -1,5 +1,5 @@
 '''
-Copyright (c) 2014, George Ungureanu <ugeorge@kth.se> 
+Copyright (c) 2014, George Ungureanu 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,14 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    f2dot.py -- the main running script of the program.
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: parsing the arguments, configuring the run-time and 
+            calling the parser methods
+ * License: BSD3
+'''
 import os
 import argparse
 import logging
@@ -38,7 +46,7 @@ from settings import Settings
 from parsers import ForsydeModelParser
 
 def main():
-	parser = argparse.ArgumentParser(version=__init__.__version__ +
+	parser = argparse.ArgumentParser(version= 'f2dot' + __init__.__version__ +
                                      '  (c) 2014 ugeorge@kth.se',
                                      description='f2dot - a ForSyDe DOT plotter.')
 	required = parser.add_mutually_exclusive_group(required=True)	
@@ -102,9 +110,9 @@ def main():
 		fh.setLevel(logging.DEBUG)
 	
 	if args.generate_config:
-		dic.createConfFile('')
+		dic.createConfFileForce(os.getcwd())
 		logger.info('Generated config file, Now exiting.')
-		quit()
+		os._exit(1)
     
 	logger.debug('Starting the program execution...')
 	settings = Settings(args)

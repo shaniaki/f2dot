@@ -29,6 +29,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    settings.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: provide an object containing the all run-time settings, 
+            which may be used by all modules.
+ * License: BSD3
+'''
+
 import os
 import utils
 import logging
