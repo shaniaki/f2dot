@@ -63,7 +63,7 @@ class Settings:
 		if args.config:
 			self.confFile = os.path.abspath(args.config)
 		else:
-			self.confFile = dic.createConfFile(self.runPath)
+			self.confFile = dic.createConfFile(self.inPath)
 
 		settingsdic = {
 			dic.DIRECTION : '',
