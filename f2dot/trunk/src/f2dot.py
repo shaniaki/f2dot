@@ -1,5 +1,5 @@
 '''
-Copyright (c) 2014, George Ungureanu 
+Copyright (c) 2014, George Ungureanu <ugeorge@kth.se> 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,23 +32,48 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import argparse
 import logging
+import __init__
 import dictionary as dic
 from settings import Settings
 from parsers import ForsydeModelParser
 
 def main():
-	parser = argparse.ArgumentParser(version='f2dot 0.1', description='f2dot - a ForSyDe DOT plotter.')
+	parser = argparse.ArgumentParser(version=__init__.__version__ +
+                                     '  (c) 2014 ugeorge@kth.se',
+                                     description='f2dot - a ForSyDe DOT plotter.')
 	required = parser.add_mutually_exclusive_group(required=True)	
-	required.add_argument("input", nargs='?', help="Input file containing the top module.")
-	required.add_argument("-g", "--generate_config", help="Generates a defaut config file in the current folder and exits.", action="store_true")
-	parser.add_argument("-d", "--debug", help="Terminal debug.", action='store_true')
-	parser.add_argument("-l", "--log", help="Write a detailed log in the input folder.", action='store_true')
-	parser.add_argument("-o", "--output", help="Path to the output folder. If none specified, the output graph will be generated in the same folder as the input.")
-	parser.add_argument("-c", "--config", help="Custon config file. If none specified and none exists in the same folder as the input file, a config file having the default settings will be generated there.")
-	parser.add_argument("--dir", help="Graph direction (LR,TB - default LR). Overrides the " + dic.DIRECTION + " setting in the configuration file")
-	parser.add_argument("--level", help="Depth of plotting or maximum level of detail before composite processes are displayed as black boxes. Overrides the "+ dic.DETAIL_LEVEL + " setting in the configuration file.")
-	parser.add_argument("--prog", help="Graph generation algorithm (neato, dot, twopi, circo, fdp, nop). Overrides the " + dic.PROG + " setting in the configuration file.")
-	parser.add_argument("--format", help="Output file format (canon, cmap, cmapx, cmapx_np, dia, dot, fig, gd, gd2, gif, hpgl, imap, imap_np, ismap, jpe, jpeg, jpg, mif, mp, pcl, pdf, pic, plain, plain-ext, png, ps, ps2, svg, svgz, vml, vmlz, vrml, vtx, wbmp, xdot, xlib - default dot). Overrides the " + dic.FORMAT +" setting in the configuration file.")
+	required.add_argument("input", nargs='?', help="Input file \
+                          containing the top module.")
+	required.add_argument("-g", "--generate_config", help="Generates a \
+                          defaut config file in the current folder and exits.",
+                          action="store_true")
+	parser.add_argument("-d", "--debug", help="Terminal debug.",
+                        action='store_true')
+	parser.add_argument("-l", "--log", help="Write a detailed log in \
+                        the input folder.", action='store_true')
+	parser.add_argument("-o", "--output", help="Path to the output \
+                        folder. If none specified, the output graph will be generated in \
+                        the same folder as the input.")
+	parser.add_argument("-c", "--config", help="Custon config file. If \
+                        none specified and none exists in the same folder as the input \
+                        file, a config file having the default settings will be generated \
+                        there.")
+	parser.add_argument("--dir", help="Graph direction (LR,TB - \
+                        default LR). Overrides the " + dic.DIRECTION + " setting in the \
+                        configuration file")
+	parser.add_argument("--level", help="Depth of plotting or maximum \
+                        level of detail before composite processes are displayed as black \
+                        boxes. Overrides the "+ dic.DETAIL_LEVEL + " setting in the \
+                        configuration file.")
+	parser.add_argument("--prog", help="Graph generation algorithm \
+                        (neato, dot, twopi, circo, fdp, nop). Overrides the " + dic.PROG +
+                        " setting in the configuration file.")
+	parser.add_argument("--format", help="Output file format (canon, \
+                        cmap, cmapx, cmapx_np, dia, dot, fig, gd, gd2, gif, hpgl, imap, \
+                        imap_np, ismap, jpe, jpeg, jpg, mif, mp, pcl, pdf, pic, plain, \
+                        plain-ext, png, ps, ps2, svg, svgz, vml, vmlz, vrml, vtx, wbmp, \
+                        xdot, xlib - default dot). Overrides the " + dic.FORMAT +" setting \
+                        in the configuration file.")
 	args = parser.parse_args()
 
 	print "\n\n===================================================="
@@ -68,8 +93,10 @@ def main():
 		ch.setLevel(logging.INFO)
 	# file logger
 	if args.log:
-		fh = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(args.input)), 'f2dot.log'))
-		formatter = logging.Formatter('%(asctime)s * [%(levelname)s - %(name)s] : %(message)s')
+		fh = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(args.input)),
+                                         'f2dot.log'))
+		formatter = logging.Formatter('%(asctime)s * [%(levelname)s - \
+                                      %(name)s] : %(message)s')
 		fh.setFormatter(formatter)
 		logger.addHandler(fh)
 		fh.setLevel(logging.DEBUG)
