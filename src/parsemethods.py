@@ -29,6 +29,16 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    parsemethods.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: implementing objects and methods for extracting and using
+            basic information from the XML files common for all parser
+            classes
+ * License: BSD3
+'''
+
 import dictionary as dic
 import utils
 import re
@@ -84,15 +94,14 @@ class getBasicSignalInfo(object):
 		self.target = parentID + '_' + node.getAttribute(dic.TARGET_ATTR)
 		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
 
-		info_tags = settings.portCompTags
+		info_tags = settings.signalTags
 		self.label = []
 		for tag in info_tags:
 			if isinstance(tag, list):
 				for child in node.getElementsByTagName(tag[-2]):
 					self.label.append(child.getAttribute(tag[-1]))
 			else:
-				self.label.append(node.getAttribute(tag))	
-
+				self.label.append(node.getAttribute(tag))
 class getLeafPortList(object):
 	def __init__(self, parentNode, settings):
 		self.in_ports = []
@@ -145,6 +154,7 @@ def buildRecord(processInfo, listOfPorts):
 
 	nodeLabel = ''
 	for nodeInfo in processInfo.label:
+		nodeInfo = re.sub('[^0-9a-zA-Z_-]+', '', nodeInfo)
 		nodeLabel = nodeLabel + nodeInfo + '&#92;n'
 	nodeLabel = nodeLabel.rstrip('|')
 	

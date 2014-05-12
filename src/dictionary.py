@@ -29,6 +29,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    dictionary.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: providing consistent name tags for this project independent
+            on the changes in ForSyDe
+ * License: BSD3
+'''
+
 import os
 import __init__
 from sys import stdin
@@ -76,6 +85,7 @@ CONFIG_TEXT = \
 	'# description : automatically generated configuration file\n' +\
 	'# usage       : change the right-hand values as suggested \n' +\
 	'# works with  : f2dot ' + __init__.__version__ + '\n' +\
+	'# ####################################################################\n' +\
 	'\n' +\
 	'# The direction of the plotted graph is controlled with\n' +\
 	'# ' + DIRECTION + '. Choose LR for left-to-right plotting or TB for\n' +\
@@ -187,11 +197,18 @@ CONFIG_TEXT = \
 	COMPOSITE_BASE_COLOR + '=11,16,21\n'
 
 def createConfFile(path):
-    confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
-    if not(os.path.isfile(confFile)):
+	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
+	if not(os.path.isfile(confFile)):
 		f = open(confFile,'w')
 		f.write(CONFIG_TEXT)
 		f.close()
-    return confFile
+	return confFile
+
+def createConfFileForce(path):
+	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
+	f = open(confFile,'w')
+	f.write(CONFIG_TEXT)
+	f.close()
+	return confFile
 
 

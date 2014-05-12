@@ -29,6 +29,16 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+
+'''          
+ * File:    parsers.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: implementing xml parsers for different ForSyDe-based 
+            intermediate models. All parsers inherit the ModelParser
+            class
+ * License: BSD3
+'''
+
 import xml.dom.minidom as xmlparser
 import pygraphviz as pgv
 import os
@@ -106,7 +116,7 @@ class ForsydeModelParser(ModelParsers):
 				bgColor = utils.computeBackground(self.set.compColorCoeffs,level)
 				frame = graph.subgraph( \
 					name = "cluster_" + compositeInfo.ID, \
-					label = compositeInfo.label, \
+					label = '[ ' + utils.text(compositeInfo.label) + ' ]', \
 					style = 'filled, rounded', \
 					color = bgColor)
 				self.__parseXmlFile(xmlFile, frame, compositeInfo.ID, level + 1)
@@ -154,7 +164,7 @@ class ForsydeModelParser(ModelParsers):
 
 					graph.add_node( \
 						portInfo.ID, 
-						label=portInfo.label, \
+						label=utils.text(portInfo.label), \
 						shape='invhouse', \
 						fontname='Helvetica', \
 						fontsize='8', \
@@ -230,7 +240,7 @@ class ForsydeModelParser(ModelParsers):
 							src_p = ''
 							dst_p = ''
 					graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
-						style=style, penwidth=penwidth)
+						style=style, penwidth=penwidth, label=utils.text(signalInfo.label))
 					self.logger.debug( 'Added signal between <%s:%s> and <%s:%s>;',\
 						src, src_p, dst, dst_p)
 
