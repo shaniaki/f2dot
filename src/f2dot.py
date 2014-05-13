@@ -103,8 +103,7 @@ def main():
 	if args.log:
 		fh = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(args.input)),
                                          'f2dot.log'))
-		formatter = logging.Formatter('%(asctime)s * [%(levelname)s - \
-                                      %(name)s] : %(message)s')
+		formatter = logging.Formatter('%(asctime)s * [%(levelname)s -%(name)s] : %(message)s')
 		fh.setFormatter(formatter)
 		logger.addHandler(fh)
 		fh.setLevel(logging.DEBUG)

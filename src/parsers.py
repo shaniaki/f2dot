@@ -136,14 +136,20 @@ class ForsydeModelParser(ModelParsers):
 					fillcolor = self.set.leafColor, \
 					style = 'rounded, filled', \
 					fontname = 'Helvetica', \
+					#rankType='same',
 					fontsize = '12')
 
 			self.logger.debug( 'Found ' + str(len(list_of_leaves)) + ' leaf processes' \
 				+ ' in <' + parentId + '>\n\t' + str(list_of_leaves))
 
 			for port in pn.getElementsByTagName(dic.PORT_TAG):
+				list_of_ins = []
+				list_of_outs = []
 				if port.parentNode == pn:
 					portInfo = getBasicPortInfo(port, parentId, self.set)
+					if portInfo.direction == dic.INPUT_DIR:
+						list_of_ins.append(portInfo.ID)
+						list_of_outs.append(portInfo.ID)
 					
 					#a little flavour customization
 					portType = port.getAttribute(dic.TYPE_ATTR)
@@ -157,10 +163,20 @@ class ForsydeModelParser(ModelParsers):
 						rotation_angle = '0'
 						port_height = '0.3'
 						port_width = '0.5'
+						compassIn='n'
+						compassOut='s'
 					else:
 						rotation_angle = '90'
 						port_height = '0.3'
-						port_width = '0.7'
+						port_width = '0.5'
+						compassIn='w'
+						compassOut='e'
+					'''if portInfo.direction == dic.INPUT_DIR:
+						rank='min'
+					else:
+						rank='min' '''
+
+					
 
 					graph.add_node( \
 						portInfo.ID, 
@@ -168,36 +184,42 @@ class ForsydeModelParser(ModelParsers):
 						shape='invhouse', \
 						fontname='Helvetica', \
 						fontsize='8', \
-						orientation=rotation_angle, \
-						height=port_height, \
-						width=port_width)
+						#rankType=rank, \
+						width=port_width , \
+						height=port_height , \
+						orientation=rotation_angle)
 
 					if portInfo.direction == dic.INPUT_DIR:
 						if portInfo.bound_process in list_of_leaves:
 							src = portInfo.ID
 							dst = portInfo.bound_process
-							src_p = ''
-							dst_p = portInfo.bound_port
+							src_p = '' + compassOut
+							dst_p = portInfo.bound_port + ':' + compassIn
 						else:
 							src = portInfo.ID
-							dst = portInfo.bound_process + '_' + portInfo.bound_port
-							src_p = ''
-							dst_p = ''
+							dst = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
+							src_p = '' + compassOut
+							dst_p = '' + compassIn
 					if portInfo.direction == dic.OUTPUT_DIR:
 						if portInfo.bound_process in list_of_leaves:
 							src = portInfo.bound_process
 							dst = portInfo.ID
-							src_p = portInfo.bound_port
-							dst_p = ''
+							src_p = portInfo.bound_port + ':' + compassOut
+							dst_p = '' + compassIn
 						else:
-							src = portInfo.bound_process + '_' + portInfo.bound_port
+							src = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
 							dst = portInfo.ID
-							src_p = ''
-							dst_p = ''
+							src_p = '' + compassOut
+							dst_p = '' + compassIn
 					graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
 						style=style, penwidth=penwidth)
 					self.logger.debug( 'Added signal between <%s:%s> and <%s:%s>;',\
 						src, src_p, dst, dst_p)
+
+				ins=graph.add_subgraph(list_of_ins,name=parentId+'ins')
+				outs=graph.add_subgraph(list_of_outs,name=parentId+'outs')
+				ins.graph_attr['rank']='same'
+				outs.graph_attr['rank']='same'
 
 				for signal in pn.getElementsByTagName(dic.SIGNAL_TAG):
 					signalInfo = getBasicSignalInfo(signal, parentId, self.set)
@@ -210,6 +232,12 @@ class ForsydeModelParser(ModelParsers):
 					else:
 						style = ''
 						penwidth = 1
+					if self.vertical:
+						compassIn='n'
+						compassOut='s'
+					else:
+						compassIn='w'
+						compassOut='e'
 		
 					if signalInfo.source in list_of_leaves:
 						# source is a leaf process
@@ -217,28 +245,28 @@ class ForsydeModelParser(ModelParsers):
 							# target is a leaf process
 							src = signalInfo.source
 							dst = signalInfo.target
-							src_p = signalInfo.source_port
-							dst_p = signalInfo.target_port
+							src_p = signalInfo.source_port + ':' + compassOut
+							dst_p = signalInfo.target_port + ':' + compassIn
 						else:
 							# target is a composite process
 							src = signalInfo.source
-							dst = signalInfo.target + '_' + signalInfo.target_port
-							src_p = signalInfo.source_port
-							dst_p = ''
+							dst = signalInfo.target + dic.ID_SEP + signalInfo.target_port
+							src_p = signalInfo.source_port + ':' + compassOut
+							dst_p = '' + compassIn
 					else:
 						# source is a composite process
 						if signalInfo.target in list_of_leaves:
 							# target is a leaf process
-							src = signalInfo.source + '_' + signalInfo.source_port
+							src = signalInfo.source + dic.ID_SEP + signalInfo.source_port
 							dst = signalInfo.target
-							src_p = ''
-							dst_p = signalInfo.target_port
+							src_p = '' + compassOut
+							dst_p = signalInfo.target_port + ':' + compassIn
 						else:
 							# target is a composite process
-							src = signalInfo.source + '_' + signalInfo.source_port
-							dst = signalInfo.target + '_' + signalInfo.target_port
-							src_p = ''
-							dst_p = ''
+							src = signalInfo.source + dic.ID_SEP + signalInfo.source_port
+							dst = signalInfo.target + dic.ID_SEP + signalInfo.target_port
+							src_p = '' + compassOut
+							dst_p = '' + compassIn
 					graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
 						style=style, penwidth=penwidth, label=utils.text(signalInfo.label))
 					self.logger.debug( 'Added signal between <%s:%s> and <%s:%s>;',\

@@ -47,7 +47,7 @@ class getBasicCompositeInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.component_name = node.getAttribute(dic.COMPONENT_ATTR)
 		self.name = node.getAttribute(dic.NAME_ATTR)
-		self.ID = parentID + '_' + self.name
+		self.ID = parentID + dic.ID_SEP + self.name
 		info_tags = settings.compTags
 		self.label = []
 		for tag in info_tags:
@@ -60,7 +60,7 @@ class getBasicCompositeInfo(object):
 class getBasicLeafInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.name = node.getAttribute(dic.NAME_ATTR)
-		self.ID = parentID + '_' + self.name
+		self.ID = parentID + dic.ID_SEP + self.name
 		info_tags = settings.leafTags
 		self.label = []
 		for tag in info_tags:
@@ -73,9 +73,9 @@ class getBasicLeafInfo(object):
 class getBasicPortInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.name = node.getAttribute(dic.NAME_ATTR)
-		self.ID = parentID + '_' + self.name
+		self.ID = parentID + dic.ID_SEP + self.name
 		self.direction = node.getAttribute(dic.DIRECTION_ATTR)
-		self.bound_process = parentID + '_' + node.getAttribute(dic.BOUND_PROCESS_ATTR)
+		self.bound_process = parentID + dic.ID_SEP + node.getAttribute(dic.BOUND_PROCESS_ATTR)
 		self.bound_port = node.getAttribute(dic.BOUND_PORT_ATTR)
 		info_tags = settings.portCompTags
 		self.label = []
@@ -89,9 +89,9 @@ class getBasicPortInfo(object):
 class getBasicSignalInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.name = node.getAttribute(dic.NAME_ATTR)
-		self.source = parentID + '_' + node.getAttribute(dic.SOURCE_ATTR)
+		self.source = parentID + dic.ID_SEP + node.getAttribute(dic.SOURCE_ATTR)
 		self.source_port =  node.getAttribute(dic.SOURCE_PORT_ATTR)
-		self.target = parentID + '_' + node.getAttribute(dic.TARGET_ATTR)
+		self.target = parentID + dic.ID_SEP + node.getAttribute(dic.TARGET_ATTR)
 		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
 
 		info_tags = settings.signalTags
