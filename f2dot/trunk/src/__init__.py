@@ -1,1 +1,1 @@
-__version__ = "0.1.0." + filter(str.isdigit, "$Revision$")
+__version__ = "0.1.1." + filter(str.isdigit, "$Revision$")

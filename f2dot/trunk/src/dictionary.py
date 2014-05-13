@@ -42,8 +42,9 @@ import os
 import __init__
 from sys import stdin
 
-# project conventional file names
+# project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
+ID_SEP='@'
 
 # configuration settings names convention
 DIRECTION="DIRECTION"
