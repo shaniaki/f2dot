@@ -1,0 +1,3 @@
+import src.f2dot
+
+src.f2dot.main ()
