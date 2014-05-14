@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import utils
 import logging
+import __init__
 import dictionary as dic
 
 
@@ -65,28 +66,17 @@ class Settings:
 		else:
 			self.confFile = dic.createConfFile(self.inPath)
 
-		settingsdic = {
-			dic.DIRECTION : '',
-			dic.DETAIL_LEVEL : '',
-			dic.FORMAT : '',
-			dic.PROG : '',
-			dic.LEAF_INFO_TAGS : '',
-			dic.COMPOSITE_INFO_TAGS : '',
-			dic.LEAF_PORT_INFO_TAGS : '',
-			dic.COMPOSITE_PORT_INFO_TAGS : '',
-			dic.SIGNAL_INFO_TAGS : '',
-			dic.COMPOSITE_BASE_COLOR : '',
-			dic.COMPOSITE_BOX_COLOR : '',
-			dic.LEAF_BASE_COLOR : ''
-			}
+		settingsdic = {}
 		for line in open(self.confFile):
 			li=line.strip()
+			if li.startswith("# works with  : f2dot"):
+				confVer = li.split("# works with  : f2dot ",1)[1]
+				if not confVer == __init__.__version__:
+					self.logger.warn('The config file was created by another version '
+									+ 'of the tool. Errors may occur.')
 			if not (li.startswith("#")) and ('=' in li):
 				tag, value = utils.strBeforeAfter(line,"=")
-				if tag in settingsdic:
-					settingsdic[tag] = value[:-1]
-				else:
-					self.logger.warn("Cannot recognize option %s. Will ignore it.", tag)
+				settingsdic[tag] = value[:-1]
 
 		self.__setDirection(settingsdic[dic.DIRECTION],args.dir)
 		self.__setDetailLevel(settingsdic[dic.DETAIL_LEVEL],args.level)
@@ -99,7 +89,12 @@ class Settings:
 		self.__setSignalTags(settingsdic[dic.SIGNAL_INFO_TAGS])
 		self.__setLeafColor(settingsdic[dic.LEAF_BASE_COLOR])
 		self.__setCompColor(settingsdic[dic.COMPOSITE_BASE_COLOR])
-		self.__setCompBoxColor(settingsdic[dic.COMPOSITE_BOX_COLOR])
+		self.__setCompBoxColor(settingsdic[dic.COMPOSITE_BOX_COLOR])	
+		self.__setClusterInports(settingsdic[dic.CLUSTER_INPUT_PORTS])
+		self.__setClusterOutports(settingsdic[dic.CLUSTER_OUTPUT_PORTS])
+		self.__setClusterSources(settingsdic[dic.CLUSTER_SOURCES])
+		self.__setClusterSinks(settingsdic[dic.CLUSTER_SINKS])
+		self.__setClusterOthers(settingsdic[dic.CLUSTER_OTHERS])
 
 		self.outPathAndFile = os.path.join(self.outPath, utils.getFileName(self.inFile) + '.' + self.format)
 
@@ -209,6 +204,58 @@ class Settings:
 		else:
 			self.logger.warn("Cannot find/recognize color %s. Choosing default (11,16,21)",self.compColorCoeffs)
 			self.compColorCoeffs = [11,16,21]
+
+	def __setCompBoxColor(self, confString):
+		if confString:
+			self.compBoxColor = confString
+		else:
+			self.logger.warn("Cannot find/recognize color %s. Choosing default (#FCD975)",self.compBoxColor)
+			self.signalTags = "#FCD975"
+
+	def __setClusterInports(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterInports = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterInports = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_INPUT_PORTS)
+			self.clusterInports = True
+
+	def __setClusterOutports(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterOutports = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterOutports = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_OUTPUT_PORTS)
+			self.clusterOutports = True
+
+	def __setClusterSources(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterSources = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterSources = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_SOURCES)
+			self.clusterSources = True
+
+	def __setClusterSinks(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterSinks = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterSinks = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_SINKS)
+			self.clusterSinks = True
+
+	def __setClusterOthers(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterOthers = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterOthers = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_OTHERS)
+			self.clusterOthers = True
 			
 
 	def printSettings(self):
@@ -232,5 +279,9 @@ class Settings:
 			+ '\t* signalTags : ' + str(self.signalTags) + '\n' \
 			+ '\t* leafColor : ' + self.leafColor + '\n' \
 			+ '\t* compBoxColor : ' + self.compBoxColor + '\n' \
-			+ '\t* compColorCoeffs : ' + str(self.compColorCoeffs)
+			+ '\t* clusterInports : ' + str(self.clusterInports)+ '\n' \
+			+ '\t* clusterOutports : ' + str(self.clusterOutports)+ '\n' \
+			+ '\t* clusterSources : ' + str(self.clusterSources)+ '\n' \
+			+ '\t* clusterSinks : ' + str(self.clusterSinks)+ '\n' \
+			+ '\t* clusterOthers : ' + str(self.clusterOthers)
 		return msg

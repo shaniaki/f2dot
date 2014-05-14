@@ -138,6 +138,37 @@ class getCompositePortList(object):
 			else:
 				self.out_ports.append((port_name, info))
 
+class Clusters(object):
+	def __init__(self, settings, graph, listOfNames):
+		self.clusters = {}
+		self.clusters['parent'] = graph
+		for name in listOfNames:
+			c = graph.subgraph(name= str(graph.name) + name, label='' )
+			self.clusters[name] = c
+	
+	def add_node(self, clusterName, node, label='', shape='record', color='black', fillcolor='transparent', style='rounded, filled', fontname='Helvetica', fontsize='12', width='', height='', orientation='90'):
+		self.clusters[clusterName].add_node( \
+			node, \
+			label = label, \
+			shape = shape, \
+			color = color, \
+			fillcolor = fillcolor, \
+			style = style, \
+			fontname = fontname, \
+			width = width, 
+			height = height, 
+			orientation = orientation, 
+			fontsize = fontsize)
+	
+	def subgraph(self, clusterName, name, label='', style='', color='') :
+		frame = self.clusters[clusterName].subgraph( \
+			name = name, \
+			label = label, \
+			style = style, \
+			color = color)
+		return frame
+
+
 # build the record node label to display the ports in both directions for horizontal plots
 def buildRecord(processInfo, listOfPorts):
 	record = '{ {'

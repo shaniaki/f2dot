@@ -59,6 +59,11 @@ SIGNAL_INFO_TAGS="SIGNAL_INFO_TAGS"
 COMPOSITE_BASE_COLOR="COMPOSITE_BACKGROUND_COLOR_COEFFICIENTS"
 LEAF_BASE_COLOR="LEAF_BASE_COLOR"
 COMPOSITE_BOX_COLOR="COMPOSITE_BOX_COLOR"
+CLUSTER_INPUT_PORTS="CLUSTER_INPUT_PORTS"
+CLUSTER_OUTPUT_PORTS="CLUSTER_OUTPUT_PORTS"
+CLUSTER_SOURCES="CLUSTER_SOURCES"
+CLUSTER_SINKS="CLUSTER_SINKS"
+CLUSTER_OTHERS="CLUSTER_OTHERS"
 
 # ForSyDe XML tags convention
 PROCESS_NETWORK_TAG='process_network'
@@ -164,7 +169,7 @@ CONFIG_TEXT = \
 	'\n' +\
 	COMPOSITE_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
-	'# SIGNAL_INFO_TAGS decides what information should appear on the\n' +\
+	'# ' + SIGNAL_INFO_TAGS + ' decides what information should appear on the\n' +\
 	'# signals. This information is extracted from the XML files, as node\n' +\
 	'# attribute values. The option consists in a string of attribute names\n' +\
 	'# separated by commas (,). If the attribute does not belong to the\n' +\
@@ -173,6 +178,32 @@ CONFIG_TEXT = \
 	'# from ' + LEAF_INFO_TAGS + '.\n' +\
 	'\n' +\
 	SIGNAL_INFO_TAGS + '=\n' +\
+	'\n' +\
+	'# ' + CLUSTER_INPUT_PORTS + ' switches whether or not the nodes corresponding\n' +\
+	'# to the input ports are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_INPUT_PORTS + '=YES\n' +\
+	'\n' +\
+	'# ' + CLUSTER_OUTPUT_PORTS + ' switches whether or not the nodes corresponding\n' +\
+	'# to the input ports are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_OUTPUT_PORTS + '=YES\n' +\
+	'\n' +\
+	'# ' + CLUSTER_SOURCES + ' switches whether or not the nodes corresponding to\n' +\
+	'# the source processes are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_SOURCES + '=NO\n' +\
+	'\n' +\
+	'# ' + CLUSTER_SINKS + ' switches whether or not the nodes corresponding to the\n' +\
+	'# sink processes are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_SINKS + '=NO\n' +\
+	'\n' +\
+	'# ' + CLUSTER_OTHERS + ' switches whether or not the other nodes (not\n' +\
+	'# clustered already) are grouped inside one cluster, for physical\n' +\
+	'# separation from the other nodes.\n' +\
+	'\n' +\
+	CLUSTER_OTHERS + '=NO\n' +\
 	'\n' +\
 	'# The ' + LEAF_BASE_COLOR + ' option controls the color of the leaf process\n' +\
 	'# nodes in the output graph. he format of the color is "#RGB" where R,\n' +\
