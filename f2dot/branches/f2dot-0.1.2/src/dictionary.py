@@ -45,6 +45,9 @@ from sys import stdin
 # project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
+PAT_START='{'
+PAT_STOP='}'
+PAT_SEP='&&'
 
 # configuration settings names convention
 DIRECTION="DIRECTION"

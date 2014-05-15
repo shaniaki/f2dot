@@ -20,6 +20,12 @@ Version history
 f2dot-0.1.2
  * added the option to customize which processes to be clustered by
    the main parser (structural changes in the code)
+ * fixed vector/array/tuple signals bug
+ * added full support for XPath queries by including py-dom-xpath
+   library (https://code.google.com/p/py-dom-xpath/)
+ * coded the parser methods to extract queries which return both
+   node-sets and unicode values. Thus, one can write custom labels
+   (names) through appropriate XPath queries.
 
 f2dot-0.1.1
  * fixed path and config bugs

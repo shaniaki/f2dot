@@ -139,49 +139,19 @@ class Settings:
 			self.program='dot'
 
 	def __setLeafTags(self, confString):
-		self.leafTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.leafTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.leafTags.append(attr)
+		self.leafTags = utils.parseLableTags(confString)
 
 	def __setCompTags(self, confString):
-		self.compTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.compTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.compTags.append(attr)
+		self.compTags = utils.parseLableTags(confString)
 
 	def __setPortLeafTags(self, confString):
-		self.portLeafTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.portLeafTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.portLeafTags.append(attr)
+		self.portLeafTags = utils.parseLableTags(confString)
 
 	def __setPortCompTags(self, confString):
-		self.portCompTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.portCompTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.portCompTags.append(attr)
+		self.portCompTags = utils.parseLableTags(confString)
 
 	def __setSignalTags(self, confString):
-		self.signalTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.signalTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.signalTags.append(attr)
+		self.signalTags = utils.parseLableTags(confString)
 
 	def __setLeafColor(self, confString):
 		if confString:

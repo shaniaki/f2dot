@@ -39,69 +39,60 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * License: BSD3
 '''
 
+import xpath
 import dictionary as dic
 import utils
 import re
+import logging
+from itertools import izip_longest
+
+logger = logging.getLogger('f2dot.parser.parsermethods')
 
 class getBasicCompositeInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.component_name = node.getAttribute(dic.COMPONENT_ATTR)
 		self.name = node.getAttribute(dic.NAME_ATTR)
 		self.ID = parentID + dic.ID_SEP + self.name
-		info_tags = settings.compTags
-		self.label = []
-		for tag in info_tags:
-			if isinstance(tag, list):
-				for child in node.getElementsByTagName(tag[-2]):
-					self.label.append(child.getAttribute(tag))
-			else:
-				self.label.append(node.getAttribute(tag))
+		self.label = serveQueries(node, settings.compTags)
+		logger.debug('Labels for composite process <' + self.ID + '>:\n ' 
+				+ str(self.label))
+
 			
 class getBasicLeafInfo(object):
 	def __init__(self, node, parentID, settings):
+		context = xpath.XPathContext(node)
 		self.name = node.getAttribute(dic.NAME_ATTR)
 		self.ID = parentID + dic.ID_SEP + self.name
-		info_tags = settings.leafTags
-		self.label = []
-		for tag in info_tags:
-			if isinstance(tag, list):
-				for child in node.getElementsByTagName(tag[-2]):
-					self.label.append(child.getAttribute(tag[-1]))
-			else:
-				self.label.append(node.getAttribute(tag))
+		self.label = serveQueries(node, settings.leafTags)
+		logger.debug('Labels for leaf process <' + self.ID + '>: \n '
+                     + str(self.label))
 
 class getBasicPortInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.name = node.getAttribute(dic.NAME_ATTR)
 		self.ID = parentID + dic.ID_SEP + self.name
 		self.direction = node.getAttribute(dic.DIRECTION_ATTR)
-		self.bound_process = parentID + dic.ID_SEP + node.getAttribute(dic.BOUND_PROCESS_ATTR)
+		self.bound_process = parentID + dic.ID_SEP + \
+                             node.getAttribute(dic.BOUND_PROCESS_ATTR)
 		self.bound_port = node.getAttribute(dic.BOUND_PORT_ATTR)
-		info_tags = settings.portCompTags
-		self.label = []
-		for tag in info_tags:
-			if isinstance(tag, list):
-				for child in node.getElementsByTagName(tag[-2]):
-					self.label.append(child.getAttribute(tag[-1]))
-			else:
-				self.label.append(node.getAttribute(tag))
+		self.label = serveQueries(node, settings.portCompTags)
+		logger.debug('Labels for port <' + self.ID + '>: \n ' +
+                     str(self.label))
 
 class getBasicSignalInfo(object):
 	def __init__(self, node, parentID, settings):
 		self.name = node.getAttribute(dic.NAME_ATTR)
-		self.source = parentID + dic.ID_SEP + node.getAttribute(dic.SOURCE_ATTR)
-		self.source_port =  node.getAttribute(dic.SOURCE_PORT_ATTR)
-		self.target = parentID + dic.ID_SEP + node.getAttribute(dic.TARGET_ATTR)
+		self.source = parentID + dic.ID_SEP + \
+                      node.getAttribute(dic.SOURCE_ATTR)
+		self.source_port = node.getAttribute(dic.SOURCE_PORT_ATTR)
+		self.target = parentID + dic.ID_SEP + \
+                      node.getAttribute(dic.TARGET_ATTR)
 		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
+		self.label = serveQueries(node, settings.portCompTags)
+		logger.debug('Labels for signal %s:%s->%s:%s\n  %s', \
+					 self.source, self.source_port, self.target, \
+                     self.target_port, self.label)
 
-		info_tags = settings.signalTags
-		self.label = []
-		for tag in info_tags:
-			if isinstance(tag, list):
-				for child in node.getElementsByTagName(tag[-2]):
-					self.label.append(child.getAttribute(tag[-1]))
-			else:
-				self.label.append(node.getAttribute(tag))
 class getLeafPortList(object):
 	def __init__(self, parentNode, settings):
 		self.in_ports = []
@@ -109,11 +100,7 @@ class getLeafPortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			# gather additional info
-			info_tags = settings.portLeafTags
-			info = []
-			for tag in info_tags:
-				info.append(port.getAttribute(tag))
+			info = serveQueries(parentNode, settings.portLeafTags)
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
@@ -127,16 +114,26 @@ class getCompositePortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			# gather additional info
-			info_tags = settings.portCompTags
-			info = []
-			for tag in info_tags:
-				info.append(port.getAttribute(tag))
+			info = serveQueries(parentNode, settings.portLeafTags)
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
 			else:
 				self.out_ports.append((port_name, info))
+
+def serveQueries(node, queryList):
+	label = []
+	context = xpath.XPathContext(node)
+	for queryLine in queryList:
+		returnList = []
+		for query in queryLine:				
+			queryReturn = context.find(query, node)
+			if isinstance(queryReturn, unicode):
+				returnList.append([queryReturn])
+			else:
+				returnList.append([attr.nodeValue for attr in queryReturn])
+		label.append([list(row) for row in izip_longest(*returnList, fillvalue=u'')])
+	return label
 
 class Clusters(object):
 	def __init__(self, settings, graph, listOfNames):
@@ -146,7 +143,19 @@ class Clusters(object):
 			c = graph.subgraph(name= str(graph.name) + name, label='' )
 			self.clusters[name] = c
 	
-	def add_node(self, clusterName, node, label='', shape='record', color='black', fillcolor='transparent', style='rounded, filled', fontname='Helvetica', fontsize='12', width='', height='', orientation='90'):
+	def add_node(self,
+                 clusterName,
+                 node,
+                 label='',
+                 shape='record',
+                 color='black',
+                 fillcolor='transparent',
+                 style='rounded, filled',
+                 fontname='Helvetica',
+                 fontsize='12',
+                 width='',
+                 height='',
+                 orientation='90'):
 		self.clusters[clusterName].add_node( \
 			node, \
 			label = label, \
@@ -160,14 +169,18 @@ class Clusters(object):
 			orientation = orientation, 
 			fontsize = fontsize)
 	
-	def subgraph(self, clusterName, name, label='', style='', color='') :
+	def subgraph(self,
+                 clusterName,
+                 name,
+                 label='',
+                 style='',
+                 color='') :
 		frame = self.clusters[clusterName].subgraph( \
 			name = name, \
 			label = label, \
 			style = style, \
 			color = color)
 		return frame
-
 
 # build the record node label to display the ports in both directions for horizontal plots
 def buildRecord(processInfo, listOfPorts):
@@ -176,30 +189,17 @@ def buildRecord(processInfo, listOfPorts):
 	for in_port in listOfPorts.in_ports:
 		portID = in_port[0]
 		portInfoList = in_port[1]
-		portLabel = ''
-		for portInfo in portInfoList:
-			portInfo = re.sub('[^0-9a-zA-Z_-]+', ' ', portInfo)
-			portLabel = portLabel + portInfo + '&#92;n'
+		portLabel = utils.prettyPrint(portInfoList)
 		record = record + '<' + portID + '>'+ portLabel + '|'
 	record = record.rstrip('|')
 
-	nodeLabel = ''
-	for nodeInfo in processInfo.label:
-		nodeInfo = re.sub('[^0-9a-zA-Z_-]+', '', nodeInfo)
-		nodeLabel = nodeLabel + nodeInfo + '&#92;n'
-	nodeLabel = nodeLabel.rstrip('|')
-	
-	
-	
+	nodeLabel = utils.prettyPrint(processInfo.label)
 	record = record + ' } | { ' + nodeLabel + ' } | { '
 
 	for out_port in listOfPorts.out_ports:
 		portID = out_port[0]
 		portInfoList = out_port[1]
-		portLabel = ''
-		for portInfo in portInfoList:
-			portInfo = re.sub('[^0-9a-zA-Z_-]+', ' ', portInfo)
-			portLabel = portLabel + portInfo + '&#92;n'
+		portLabel = utils.prettyPrint(portInfoList)
 		record = record + '<' + portID + '>' +  portLabel + '|'
 	record = record.rstrip('|')		
 	record = record + '} }'

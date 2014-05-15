@@ -95,6 +95,7 @@ class ForsydeModelParser(ModelParsers):
 
 		graph.add_node('dummy',style='invisible')
 
+		# add clusters
 		clusterNames = []
 		if self.set.clusterSources:
 			clusterNames.append('sources')
@@ -148,7 +149,7 @@ class ForsydeModelParser(ModelParsers):
 				frame = clusters.subgraph( 
 					clusterName = clusterName, 
 					name = "cluster_" + compositeInfo.ID, \
-					label = '[ ' + utils.text(compositeInfo.label) + ' ]', 
+					label = utils.prettyPrint(compositeInfo.label), 
 					style = 'filled, rounded', 
 					color = bgColor)
 				self.logger.debug( 'Found composite process ' + compositeInfo.ID 
@@ -181,81 +182,79 @@ class ForsydeModelParser(ModelParsers):
 			self.logger.debug( 'Found ' + str(len(list_of_leaves)) + ' leaf processes' 
 				+ ' in <' + parentId + '>\n\t' + str(list_of_leaves))
 
-			for port in pn.getElementsByTagName(dic.PORT_TAG):
-				if port.parentNode == pn:
-					portInfo = getBasicPortInfo(port, parentId, self.set)
-					
-					#a little flavour customization
-					portType = port.getAttribute(dic.TYPE_ATTR)
-					if any(vtype in portType for vtype in ["vector","array"]):
-						style = 'bold'
-						penwidth = 2
-					else:
-						style = ''
-						penwidth = 1
-					if self.vertical:
-						rotation_angle = '0'
-						port_height = '0.3'
-						port_width = '0.5'
-						compassIn='n'
-						compassOut='s'
-					else:
-						rotation_angle = '90'
-						port_height = '0.3'
-						port_width = '0.5'
-						compassIn='w'
-						compassOut='e'			
-		
-					if portInfo.direction == dic.INPUT_DIR and self.set.clusterInports:
-						clusterName = 'inps'
-					elif portInfo.direction == dic.OUTPUT_DIR and self.set.clusterOutports:
-						clusterName = 'outps'
-					elif self.set.clusterOthers:
-						clusterName = 'others'
-					else:
-						clusterName = 'parent'
+			for port in utils.getChildrenByTag(pn, dic.PORT_TAG):
+				portInfo = getBasicPortInfo(port, parentId, self.set)
+				
+				#a little flavour customization
+				portType = port.getAttribute(dic.TYPE_ATTR)
+				if any(vtype in portType for vtype in ["vector","array"]):
+					style = 'bold'
+					penwidth = 2
+				else:
+					style = ''
+					penwidth = 1
+				if self.vertical:
+					rotation_angle = '0'
+					port_height = '0.3'
+					port_width = '0.5'
+					compassIn='n'
+					compassOut='s'
+				else:
+					rotation_angle = '90'
+					port_height = '0.3'
+					port_width = '0.5'
+					compassIn='w'
+					compassOut='e'			
+	
+				if portInfo.direction == dic.INPUT_DIR and self.set.clusterInports:
+					clusterName = 'inps'
+				elif portInfo.direction == dic.OUTPUT_DIR and self.set.clusterOutports:
+					clusterName = 'outps'
+				elif self.set.clusterOthers:
+					clusterName = 'others'
+				else:
+					clusterName = 'parent'
 
-					clusters.add_node(clusterName, 
-						node = portInfo.ID, 
-						label = utils.text(portInfo.label), 
-						shape = 'invhouse', 
-						width=port_width , 
-						height=port_height , 
-						style='',
-						orientation = rotation_angle)
+				clusters.add_node(clusterName, 
+					node = portInfo.ID, 
+					label = utils.prettyPrint(portInfo.label), 
+					shape = 'invhouse', 
+					width=port_width , 
+					height=port_height , 
+					style=style,
+					orientation = rotation_angle)
 
-					if portInfo.direction == dic.INPUT_DIR:
-						if portInfo.bound_process in list_of_leaves:
-							src = portInfo.ID
-							dst = portInfo.bound_process
-							src_p = '' + compassOut
-							dst_p = portInfo.bound_port + ':' + compassIn
-						else:
-							src = portInfo.ID
-							dst = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
-							src_p = '' + compassOut
-							dst_p = '' + compassIn
-					if portInfo.direction == dic.OUTPUT_DIR:
-						if portInfo.bound_process in list_of_leaves:
-							src = portInfo.bound_process
-							dst = portInfo.ID
-							src_p = portInfo.bound_port + ':' + compassOut
-							dst_p = '' + compassIn
-						else:
-							src = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
-							dst = portInfo.ID
-							src_p = '' + compassOut
-							dst_p = '' + compassIn
-					graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
-						style=style, penwidth=penwidth)
-					self.logger.debug( 'Added signal between <%s:%s> and <%s:%s>;',\
-						src, src_p, dst, dst_p)
+				if portInfo.direction == dic.INPUT_DIR:
+					if portInfo.bound_process in list_of_leaves:
+						src = portInfo.ID
+						dst = portInfo.bound_process
+						src_p = '' + compassOut
+						dst_p = portInfo.bound_port + ':' + compassIn
+					else:
+						src = portInfo.ID
+						dst = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
+						src_p = '' + compassOut
+						dst_p = '' + compassIn
+				if portInfo.direction == dic.OUTPUT_DIR:
+					if portInfo.bound_process in list_of_leaves:
+						src = portInfo.bound_process
+						dst = portInfo.ID
+						src_p = portInfo.bound_port + ':' + compassOut
+						dst_p = '' + compassIn
+					else:
+						src = portInfo.bound_process + dic.ID_SEP + portInfo.bound_port
+						dst = portInfo.ID
+						src_p = '' + compassOut
+						dst_p = '' + compassIn
+				graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
+					style=style, penwidth=penwidth)
+				self.logger.debug( 'Added signal %s:%s->%s:%s',src, src_p, dst, dst_p )
 
 			for signal in pn.getElementsByTagName(dic.SIGNAL_TAG):
 				signalInfo = getBasicSignalInfo(signal, parentId, self.set)
 
 				#a little flavour customization
-				signalType = port.getAttribute(dic.TYPE_ATTR)
+				signalType = signal.getAttribute(dic.TYPE_ATTR)
 				if any(vtype in signalType for vtype in ["vector","array"]):
 					style = 'bold'
 					penwidth = 2
@@ -298,9 +297,8 @@ class ForsydeModelParser(ModelParsers):
 						src_p = '' + compassOut
 						dst_p = '' + compassIn
 				graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
-					style=style, penwidth=penwidth, label=utils.text(signalInfo.label))
-				self.logger.debug( 'Added signal between <%s:%s> and <%s:%s>;',\
-					src, src_p, dst, dst_p)
+					style=style, penwidth=penwidth, label=utils.prettyPrint(signalInfo.label))
+				self.logger.debug( 'Added signal %s:%s->%s:%s',src, src_p, dst, dst_p )
 
 
 

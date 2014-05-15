@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
 import re
+import dictionary as dic
 
 def strBeforeAfter(line,pattern):
 	match = re.search(pattern,line)
@@ -66,18 +67,6 @@ def getFileName(fname):
 	if match:
 		befor_keyowrd, keyword, after_keyword = fname.partition('.')
 		return befor_keyowrd
-
-def build_record(name, list_of_in_ports, list_of_out_ports):
-	record = '{ {'
-	for in_port in list_of_in_ports:
-		record = record + '<' + in_port[0] + '>'+ in_port[1] + '|'
-	record = record.rstrip('|')
-	record = record + ' } | ' + name + ' | { '
-	for out_port in list_of_out_ports:
-		record = record + '<' + out_port[0] + '>' +  out_port[1] + '|'
-	record = record.rstrip('|')		
-	record = record + '} }'
-	return record
  
 def getChildrenByTag(node, tagName):
     for child in node.childNodes:
@@ -91,10 +80,26 @@ def computeBackground(coeffs, level):
 		+ re.sub('0x','',hex(255 - coeffs[2] * level))
 	return bgHex
 
-def text(lst):
-	txt = ''
-	for i in lst:
-		txt = txt + str(i) + ', '
-	if txt:
-		txt = txt[:-2]
-	return txt
+def parseLableTags(string):
+	lst = []
+	pat_s = '\s*\\' + dic.PAT_START + '([^' + dic.PAT_STOP + ']*)\\' + dic.PAT_STOP + '\s*'
+	pat = re.compile(pat_s)
+	for line in pat.findall(string):
+		lst.append(line.split(dic.PAT_SEP))
+	return lst
+
+def rreplace(s, old, new, occurrence):
+	li = s.rsplit(old, occurrence)
+	return new.join(li)
+
+def prettyPrint(lstOfLabels):
+	infoLabels = [x for y in lstOfLabels  for x in y]
+	nodeLabel=''
+	for trInfo in infoLabels:
+		for tdInfo in trInfo:
+			tdInfo = re.sub('[^0-9a-zA-Z_-]+', '', tdInfo)
+			if tdInfo:
+				nodeLabel = nodeLabel + tdInfo + ' : '
+		nodeLabel = rreplace(nodeLabel, ' : ', '', 1)
+		nodeLabel = nodeLabel + '&#92;n'
+	return nodeLabel
