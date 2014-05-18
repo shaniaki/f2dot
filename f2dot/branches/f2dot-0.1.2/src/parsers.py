@@ -1,12 +1,3 @@
-'''          
- * File:    forsydemodelparser.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: implementing xml parsers for different ForSyDe-based 
-            intermediate models. All parsers inherit the ModelParser
-            class
- * License: BSD3
-'''
-
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -39,46 +30,42 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+'''          
+ * File:    parsers.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: implementing xml parsers for different ForSyDe-based 
+            intermediate models. All parsers inherit the ModelParser
+            class
+ * License: BSD3
+'''
+
 import xml.dom.minidom as xmlparser
 import pygraphviz as pgv
 import os
+
 import logging
 import utils
 import dictionary as dic
 from parsemethods import *
 
-## Controller class for parsing ForSyDe-XML models.
-#
-#  This is a controller class which contains the main method for
-#  parsing ForSyDe-XML models and plotting the DOT graphs.
-class ForsydeModelParser:
-	
-	## Class constructor
-	# @param ForsydeModelParser $self The object pointer
-	# @param Settings $settings The f2dot.settings.Settings object
-	#        holding the run-time settings
+
+class ModelParsers:
 	def __init__(self, settings): 
 		self.logger = logging.getLogger('f2dot.parser')
 		self.logger.debug('Initializing the parser...')
 		self.set = settings
+
+
+class ForsydeModelParser(ModelParsers):
+	def __init__(self, settings): 
+		ModelParsers.__init__(self, settings)
+		self.maxLevel=int(settings.maxLevel)
 		if settings.dir == "TB":
 			self.vertical = True
 		else:
 			self.vertical = False
 		
-		## @var logger 
-		#  Logger for this class
 
-		## @var set 
-		#  Settings object
-
-		## @var vertical 
-		#  \c True if the plot was set to TB (top-bottom)
-		
-
-	## Function to parse a ForSyDe-XML model and plot a DOT graph,
-	## according to the settings.
-	# @param ForsydeModelParser $self The object pointer
 	def plotModel(self):
 		G = pgv.AGraph(directed=True, rankdir=self.set.dir,
                        fontname='Helvetica', strict=True, overlap='prism',
@@ -123,19 +110,16 @@ class ForsydeModelParser:
 		clusters = Clusters(self.set,graph,clusterNames)
 		self.logger.debug("Added clusters: "+ str(clusterNames) )
 
-		# process network node
 		for pn in root.getElementsByTagName(dic.PROCESS_NETWORK_TAG):
 			list_of_leaves = []
 
-			# child composite processes
 			for composite in pn.getElementsByTagName(dic.COMPOSITE_PROCESS_TAG):
 				compositeInfo = getBasicCompositeInfo(composite, parentId, self.set)
 
 				# if max level has been reached, transform composite into leaf
-				if (level>= self.set.maxLevel):	
+				if (level>= self.maxLevel):	
 					list_of_leaves.append(compositeInfo.ID)
 	
-					#build composite process information
 					list_of_ports = getCompositePortList(composite, self.set)
 					processLabel = buildRecord(compositeInfo, list_of_ports)
 					if not list_of_ports.in_ports and self.set.clusterSources:
@@ -147,7 +131,6 @@ class ForsydeModelParser:
 					else :
 						clusterName = 'parent'
 
-					# add "black box" node to the appropriate cluster
 					clusters.add_node(clusterName, \
 						node = compositeInfo.ID, 
 						label = processLabel, \
@@ -157,22 +140,16 @@ class ForsydeModelParser:
 										+ parentId + '>, clustered in ' + clusterName)
 					continue
 
-				#else 
-				#build composite process information
 				xmlFile = os.path.join(self.set.inPath, compositeInfo.component_name) + '.xml'
 				bgColor = utils.computeBackground(self.set.compColorCoeffs,level)
 				if self.set.clusterOthers:
 					clusterName = 'others'
 				else:
 					clusterName = 'parent'
-
-				#add composite process subgraph and proceed with
-				#parsing its respective XML file and adding elements
-				#to this subgraph
 				frame = clusters.subgraph( 
 					clusterName = clusterName, 
 					name = "cluster_" + compositeInfo.ID, \
-					label = prettyPrintLables(compositeInfo.label), 
+					label = utils.prettyPrint(compositeInfo.label), 
 					style = 'filled, rounded', 
 					color = bgColor)
 				self.logger.debug( 'Found composite process ' + compositeInfo.ID 
@@ -180,14 +157,13 @@ class ForsydeModelParser:
 									+ '>. Building a subgraph in cluster ' + clusterName)
 				self.__parseXmlFile(xmlFile, frame, compositeInfo.ID, level + 1)
 
-			#child leaf processes
-			for leaf in pn.getElementsByTagName(dic.LEAF_PROCESS_TAG):
-	
-				# build leaf process info	
+			for leaf in pn.getElementsByTagName(dic.LEAF_PROCESS_TAG):	
 				leafInfo = getBasicLeafInfo(leaf, parentId, self.set)
 				list_of_leaves.append(leafInfo.ID)
+
 				list_of_ports = getLeafPortList(leaf, self.set)
 				processLabel = buildRecord(leafInfo, list_of_ports)
+
 				if not list_of_ports.in_ports and self.set.clusterSources:
 					clusterName = 'sources'
 				elif not list_of_ports.out_ports and self.set.clusterSinks:
@@ -197,20 +173,19 @@ class ForsydeModelParser:
 				else:
 					clusterName = 'parent'
 
-				# add leaf process node to the appropriate cluster
 				clusters.add_node(clusterName, \
 					node = leafInfo.ID, 
 					label = processLabel, \
 					fillcolor = self.set.leafColor)
 
+
 			self.logger.debug( 'Found ' + str(len(list_of_leaves)) + ' leaf processes' 
 				+ ' in <' + parentId + '>\n\t' + str(list_of_leaves))
 
-			#child (composite process) ports
 			for port in utils.getChildrenByTag(pn, dic.PORT_TAG):
 				portInfo = getBasicPortInfo(port, parentId, self.set)
 				
-				# build port info info	
+				#a little flavour customization
 				portType = port.getAttribute(dic.TYPE_ATTR)
 				if any(vtype in portType for vtype in ["vector","array"]):
 					style = 'bold'
@@ -230,6 +205,7 @@ class ForsydeModelParser:
 					port_width = '0.5'
 					compassIn='w'
 					compassOut='e'			
+	
 				if portInfo.direction == dic.INPUT_DIR and self.set.clusterInports:
 					clusterName = 'inps'
 				elif portInfo.direction == dic.OUTPUT_DIR and self.set.clusterOutports:
@@ -239,17 +215,15 @@ class ForsydeModelParser:
 				else:
 					clusterName = 'parent'
 
-				# add port node to the appropriate cluster
 				clusters.add_node(clusterName, 
 					node = portInfo.ID, 
-					label = prettyPrintLables(portInfo.label), 
+					label = utils.prettyPrint(portInfo.label), 
 					shape = 'invhouse', 
 					width=port_width , 
 					height=port_height , 
 					style=style,
 					orientation = rotation_angle)
 
-				# connect the ports to their appropriate end
 				if portInfo.direction == dic.INPUT_DIR:
 					if portInfo.bound_process in list_of_leaves:
 						src = portInfo.ID
@@ -272,17 +246,14 @@ class ForsydeModelParser:
 						dst = portInfo.ID
 						src_p = '' + compassOut
 						dst_p = '' + compassIn
-	
-				#add edge
 				graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
 					style=style, penwidth=penwidth)
 				self.logger.debug( 'Added signal %s:%s->%s:%s',src, src_p, dst, dst_p )
 
-			#signal child nodes
 			for signal in pn.getElementsByTagName(dic.SIGNAL_TAG):
 				signalInfo = getBasicSignalInfo(signal, parentId, self.set)
 
-				#build signal info
+				#a little flavour customization
 				signalType = signal.getAttribute(dic.TYPE_ATTR)
 				if any(vtype in signalType for vtype in ["vector","array"]):
 					style = 'bold'
@@ -296,6 +267,7 @@ class ForsydeModelParser:
 				else:
 					compassIn='w'
 					compassOut='e'
+	
 				if signalInfo.source in list_of_leaves:
 					# source is a leaf process
 					if signalInfo.target in list_of_leaves:
@@ -324,13 +296,13 @@ class ForsydeModelParser:
 						dst = signalInfo.target + dic.ID_SEP + signalInfo.target_port
 						src_p = '' + compassOut
 						dst_p = '' + compassIn
-
-				#add edge
 				graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
-					style=style, penwidth=penwidth, label=prettyPrintLables(signalInfo.label))
+					style=style, penwidth=penwidth, label=utils.prettyPrint(signalInfo.label))
 				self.logger.debug( 'Added signal %s:%s->%s:%s',src, src_p, dst, dst_p )
 
-		# flush the root node
+
+
+
 		del root
 
 

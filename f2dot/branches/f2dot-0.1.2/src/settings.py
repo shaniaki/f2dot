@@ -1,12 +1,3 @@
-'''          
- * File:    settings.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: This file contains methods for collecting configuration options 
-            and initialize the settings object which holds the parameters
-            throughout the program execution. 
- * License: BSD3
-'''
-
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -39,51 +30,23 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-import __init__
+'''          
+ * File:    settings.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: provide an object containing the all run-time settings, 
+            which may be used by all modules.
+ * License: BSD3
+'''
 
 import os
 import utils
 import logging
+import __init__
 import dictionary as dic
 
-## Creates a config file in the specified path if one does not 
-## exist already.
-# @param str $path 
-#        The directory where the configuration file should be
-# @return A string with the absolute path to the config file 
-def createConfFile(path):
-	confFile=os.path.join(path, dic.DEFAULT_CONFIG_FILENAME)
-	if not(os.path.isfile(confFile)):
-		f = open(confFile,'w')
-		f.write(CONFIG_TEXT)
-		f.close()
-	return confFile
 
-## Creates a config file in the specified path irrespective of one
-## existing already.
-# @param str $path 
-#        The directory where the configuration file should be
-# @return A string with the absolute path to the config file 
-def createConfFileForce(path):
-	confFile=os.path.join(path, dic.DEFAULT_CONFIG_FILENAME)
-	f = open(confFile,'w')
-	f.write(dic.CONFIG_TEXT)
-	f.close()
-	return confFile
-
-## Model class for storing configuration  parameters
-#
-#  This class is a container for the configuration settins and
-#  provides methods to gather or parse from two main sources: the
-#  configuration file and the comman-line arguments
 class Settings:
-    
-	## Class constructor
-	# @param Settings $self 
-	#        The object pointer
-	# @param ArgumentParser $args 
-	#        The comman-line arguments
-	def __init__(self, args):
+	def __init__(self, args): 
 		self.logger = logging.getLogger('f2dot.settings')
 		self.logger.debug('Configuring the runtime execution...')
 
@@ -101,13 +64,13 @@ class Settings:
 		if args.config:
 			self.confFile = os.path.abspath(args.config)
 		else:
-			self.confFile = createConfFile(self.inPath)
+			self.confFile = dic.createConfFile(self.inPath)
 
 		settingsdic = {}
 		for line in open(self.confFile):
 			li=line.strip()
 			if li.startswith("# works with  : f2dot"):
-				confVer = li.split("# works with  : f2dot-",1)[1]
+				confVer = li.split("# works with  : f2dot ",1)[1]
 				if not confVer == __init__.__version__:
 					self.logger.warn('The config file was created by another version '
 									+ 'of the tool. Errors may occur.')
@@ -134,8 +97,11 @@ class Settings:
 		self.__setClusterOthers(settingsdic[dic.CLUSTER_OTHERS])
 
 		self.outPathAndFile = os.path.join(self.outPath, utils.getFileName(self.inFile) + '.' + self.format)
-		self.logger.debug('Runtime configuration successful')
 
+		self.logger.debug(self.printSettings())
+		self.logger.debug('Runtime configuration successful')
+		
+	
 	def __setDirection(self, confString, commandArg):
 		if commandArg:
 			self.dir = commandArg
@@ -261,8 +227,7 @@ class Settings:
 			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_OTHERS)
 			self.clusterOthers = True
 			
-	## Prints the current settings
-	# @param Settings $self The object pointer
+
 	def printSettings(self):
 		msg = 'The current settings are:\n' \
 			+ '\t* runPath : ' + self.runPath + '\n' \
@@ -290,78 +255,3 @@ class Settings:
 			+ '\t* clusterSinks : ' + str(self.clusterSinks)+ '\n' \
 			+ '\t* clusterOthers : ' + str(self.clusterOthers)
 		return msg
-
-    ## @var logger 
-	#  Logger (logging object)
-
-    ## @var runPath 
-	#  The path where the runnable is located (str)
-
-    ## @var inPathAndFile 
-	#  The full path to the input file (str)
-
-    ## @var inFile 
-	#  Input file name (str)
-
-    ## @var rootProcess
-	#  The top module (str)
-
-    ## @var outPath 
-	#  Absolute path to the output directory (str)
-
-    ## @var confFile 
-	#  Absolte path to the configuration file (str)
-
-    ## @var outPathAndFile 
-	#  Absolute path to the output file (str)
-
-    ## @var dir 
-	#  The graph direction (str)
-
-    ## @var maxLevel 
-	#  The las hierarchical level plotted in the graph; at this level composit pocessesare turned into "black boxes" (int)
-
-    ## @var format 
-	#  The output file format (str)
-
-    ## @var program 
-	#  The graph generation program (str)
-
-    ## @var leafTags 
-	#  The XPath queries for leaf process lables, grouped in lists corresponding to their position (list(list(str)))
-
-    ## @var compTags 
-	#  The XPath queries for composite process lables, grouped in lists corresponding to their position (list(list(str)))
-
-    ## @var portLeafTags 
-	#  The XPath queries for leaf process ports lables, grouped in lists corresponding to their position (list(list(str)))
-
-    ## @var portCompTags 
-	#  The XPath queries for composite process ports lables, grouped in lists corresponding to their position (list(list(str)))
-
-	## @var signalTags
-    #  The XPath queries for signal lables, grouped in lists corresponding to their position (list(list(str)))
-
-    ## @var leafColor 
-	#  The hex value for the color of the leaf processes (str)
-
-    ## @var compBoxColor 
-	#  The hex value for the color of the composite processes which are turned into "black boxes" (str)
-
-    ## @var compColorCoeffs 
-	#  Coefficients to calculate the the colour gradients for the composite process clusters (list(int))
-
-    ## @var clusterInports 
-	#  Enables clustering of input composite process ports (bool)
-
-    ## @var clusterOutports 
-	#  Enables clustering of output composite process ports (bool)
-
-    ## @var clusterSources 
-	#  Enables clustering of source processes (bool)
-
-    ## @var clusterSinks 
-	#  Enables clustering of sink processes (bool)
-
-    ## @var clusterOthers 
-	#  Enables clustering of other processes (not yet clustered) (bool)

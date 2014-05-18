@@ -1,31 +1,17 @@
-/**
-@mainpage
-
-\b f2dot is a software tool developed as part of the <a
-href="https://forsyde.ict.kth.se/trac/">ForSyDe</a> (Formal System
-Design) project. The name stands for "ForSyDe-2-DOT" and enables
-plotting ForSyDe-XML models into DOT graphs. For more information,
-check the <a
-href="https://forsyde.ict.kth.se/trac/wiki/ForSyDe/f2dot">tool's wiki
-page</a>
-
 The source files are Python scripts which have the following
-dependencies: 
- - a Python interpreter (python >= 2.7)
- - the GraphViz toolset with the <a
-   href="http://pygraphviz.github.io/">pygraphviz</a> library
- - (optional) XDot, or any DOT vizualizer for visualizing \c .dot
-   files
+dependencies:
+ * a Python interpreter (python >= 2.7)
+ * the GraphViz toolset with the pygraphviz library
+ * (optional) XDot, or any DOT vizualizer for visualizing .dot files
 
 The project can be distributed with toolsets like pyinstaller
-<a href="http://www.pyinstaller.org/">pyinstaller</a> or
+(http://www.pyinstaller.org/) or distutils
+(https://docs.python.org/2/distutils/)
 
-The program usage is displayed calling the runner script \c f2dot with
-the argument \c -h with a python interpreter:
+The program usage is displayed running the script 'f2dot' with the
+argument '-h' with a python interpreter:
 
- \code 
-python f2dot -h
-\endcode */
+$ python f2dot -h
 
 
 Version history 
@@ -33,21 +19,13 @@ Version history
 
 f2dot-0.1.2
  * added the option to customize which processes to be clustered by
-   the main parser (changes in the logic of the code)
+   the main parser (structural changes in the code)
  * fixed vector/array/tuple signals bug
  * added full support for XPath queries by including py-dom-xpath
-   library (https://code.google.com/p/py-dom-xpath/) -- MIT License
+   library (https://code.google.com/p/py-dom-xpath/)
  * coded the parser methods to extract queries which return both
    node-sets and unicode values. Thus, one can write custom labels
-   (names) through appropriate XPath queries and write node tags or
-   attribute names instead of just attribute values 
- * changed the project structure to align to python distribution
-   conventions
- * gave up the C++-like class inheritance topology, since it is not
-   relevant for this project. Thus new parsers can be built now as
-   separate packages (with different names), which include everything
-   from the parsemethods package.
- * added doxygen comments and a doxfile
+   (names) through appropriate XPath queries.
 
 f2dot-0.1.1
  * fixed path and config bugs

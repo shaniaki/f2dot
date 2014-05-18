@@ -1,10 +1,3 @@
-'''          
- * File:    dictionary.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: providing consistent name tags for this project independent
-            on the changes in ForSyDe
- * License: BSD3
-'''
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -37,17 +30,26 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+'''          
+ * File:    dictionary.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: providing consistent name tags for this project independent
+            on the changes in ForSyDe
+ * License: BSD3
+'''
+
 import os
 import __init__
+from sys import stdin
 
-## @name Project conventions
+# project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
 PAT_START='{'
 PAT_STOP='}'
 PAT_SEP='&&'
 
-## @name Config file tags
+# configuration settings names convention
 DIRECTION="DIRECTION"
 DETAIL_LEVEL="DETAIL_LEVEL"
 FORMAT="FORMAT"
@@ -66,7 +68,7 @@ CLUSTER_SOURCES="CLUSTER_SOURCES"
 CLUSTER_SINKS="CLUSTER_SINKS"
 CLUSTER_OTHERS="CLUSTER_OTHERS"
 
-## @name ForSyDe-XML convention
+# ForSyDe XML tags convention
 PROCESS_NETWORK_TAG='process_network'
 COMPOSITE_PROCESS_TAG='composite_process'
 LEAF_PROCESS_TAG='leaf_process'
@@ -86,12 +88,12 @@ SOURCE_PORT_ATTR='source_port'
 TARGET_PORT_ATTR='target_port'
 
 
-## @name default config file text
-CONFIG_TEXT = '' +\
+# default configuration text
+CONFIG_TEXT = \
 	'# file        : ' + DEFAULT_CONFIG_FILENAME + ' \n' +\
 	'# description : automatically generated configuration file\n' +\
 	'# usage       : change the right-hand values as suggested \n' +\
-	'# works with  : f2dot-' + __init__.__version__ + '\n' +\
+	'# works with  : f2dot ' + __init__.__version__ + '\n' +\
 	'# ####################################################################\n' +\
 	'\n' +\
 	'# The direction of the plotted graph is controlled with\n' +\
@@ -229,5 +231,19 @@ CONFIG_TEXT = '' +\
 	'\n' +\
 	COMPOSITE_BASE_COLOR + '=11,16,21\n'
 
+def createConfFile(path):
+	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
+	if not(os.path.isfile(confFile)):
+		f = open(confFile,'w')
+		f.write(CONFIG_TEXT)
+		f.close()
+	return confFile
+
+def createConfFileForce(path):
+	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
+	f = open(confFile,'w')
+	f.write(CONFIG_TEXT)
+	f.close()
+	return confFile
 
 
