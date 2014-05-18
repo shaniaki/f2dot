@@ -1,3 +1,10 @@
+'''          
+ * File:    dictionary.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: providing consistent name tags for this project independent
+            on the changes in ForSyDe
+ * License: BSD3
+'''
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -30,26 +37,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-'''          
- * File:    dictionary.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: providing consistent name tags for this project independent
-            on the changes in ForSyDe
- * License: BSD3
-'''
-
 import os
 import __init__
-from sys import stdin
 
-# project conventions
+## @name Project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
 PAT_START='{'
 PAT_STOP='}'
 PAT_SEP='&&'
 
-# configuration settings names convention
+## @name Config file tags
 DIRECTION="DIRECTION"
 DETAIL_LEVEL="DETAIL_LEVEL"
 FORMAT="FORMAT"
@@ -68,7 +66,7 @@ CLUSTER_SOURCES="CLUSTER_SOURCES"
 CLUSTER_SINKS="CLUSTER_SINKS"
 CLUSTER_OTHERS="CLUSTER_OTHERS"
 
-# ForSyDe XML tags convention
+## @name ForSyDe-XML convention
 PROCESS_NETWORK_TAG='process_network'
 COMPOSITE_PROCESS_TAG='composite_process'
 LEAF_PROCESS_TAG='leaf_process'
@@ -88,12 +86,12 @@ SOURCE_PORT_ATTR='source_port'
 TARGET_PORT_ATTR='target_port'
 
 
-# default configuration text
-CONFIG_TEXT = \
+## @name default config file text
+CONFIG_TEXT = '' +\
 	'# file        : ' + DEFAULT_CONFIG_FILENAME + ' \n' +\
 	'# description : automatically generated configuration file\n' +\
 	'# usage       : change the right-hand values as suggested \n' +\
-	'# works with  : f2dot ' + __init__.__version__ + '\n' +\
+	'# works with  : f2dot-' + __init__.__version__ + '\n' +\
 	'# ####################################################################\n' +\
 	'\n' +\
 	'# The direction of the plotted graph is controlled with\n' +\
@@ -140,7 +138,7 @@ CONFIG_TEXT = \
 	'# in the following way: \n' +\
 	'# ' + LEAF_INFO_TAGS + '=name,process_constructor/name\n' +\
 	'\n' +\
-	LEAF_INFO_TAGS + '=name\n' +\
+	LEAF_INFO_TAGS + '={ ./@name } {./process_constructor/@name }\n' +\
 	'\n' +\
 	'# ' + COMPOSITE_INFO_TAGS + ' decides what information should appear in the\n' +\
 	'# composite process subgraphs. This information is extracted from the\n' +\
@@ -150,7 +148,7 @@ CONFIG_TEXT = \
 	'# path to the respective node needs to be provided, separated by\n' +\
 	'# dashes (/). See the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
 	'\n' +\
-	COMPOSITE_INFO_TAGS + '=name\n' +\
+	COMPOSITE_INFO_TAGS + '={ ./@name }\n' +\
 	'\n' +\
 	'# ' + LEAF_PORT_INFO_TAGS + ' decides what information should be plotted for\n' +\
 	'# the leaf process ports. This information is extracted from the XML\n' +\
@@ -231,19 +229,5 @@ CONFIG_TEXT = \
 	'\n' +\
 	COMPOSITE_BASE_COLOR + '=11,16,21\n'
 
-def createConfFile(path):
-	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
-	if not(os.path.isfile(confFile)):
-		f = open(confFile,'w')
-		f.write(CONFIG_TEXT)
-		f.close()
-	return confFile
-
-def createConfFileForce(path):
-	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
-	f = open(confFile,'w')
-	f.write(CONFIG_TEXT)
-	f.close()
-	return confFile
 
 
