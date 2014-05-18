@@ -109,7 +109,7 @@ def main():
 		fh.setLevel(logging.DEBUG)
 	
 	if args.generate_config:
-		f2dot.createConfFileForce(os.getcwd())
+		createConfFileForce(os.getcwd())
 		logger.info('Generated config file in current directory, Now exiting.')
 		os._exit(1)
     

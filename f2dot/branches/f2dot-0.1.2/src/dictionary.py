@@ -127,56 +127,56 @@ CONFIG_TEXT = '' +\
 	PROG + '=dot\n' +\
 	'\n' +\
 	'# ' + LEAF_INFO_TAGS + ' decides what information should appear in the leaf\n' +\
-	'# process nodes. This information is extracted from the XML files, as\n' +\
-	'# node attribute values. The option consists in a string of attribute\n' +\
-	'# names separated by commas (,). If the attribute does not belong to\n' +\
-	'# the <leaf_process> node, then the full relative path to the\n' +\
-	'# respective node needs to be provided, separated by dashes (/)\n' +\
+	'# process nodes. This information is extracted from the XML files, \n' +\
+	'# through XPath queries, included in a custom layout grammar having \n' +\
+	'# the following rules:\n' +\
+	'#\n' +\
+	'# LABEL=R         LABEL=      -- a LABEL may/may not contain Row\n' +\
+	'#                                information\n' +\
+	'# R = R R         R = {D}     -- (any number of) Rows consist of Data\n' +\
+	'#                                surrounded by curly brackets {}\n' +\
+	'# D = D && D      D = query   -- Data on the same Row is separated by\n' +\
+	'#                                && and consists of XPath queries \n' +\
 	'# \n' +\
-	'# Example: to label leaf processes with both process names and their\n' +\
-	'# process_constructor types, one needs to provide the attribute names\n' +\
-	'# in the following way: \n' +\
-	'# ' + LEAF_INFO_TAGS + '=name,process_constructor/name\n' +\
+	'# The tool has XPath 1.0 support, limited to ForSyDe usage. For a\n' +\
+	'# tutorial on how to build lable queries, please consult f2dot\'s\n' +\
+	'# web page.\n'+\
 	'\n' +\
 	LEAF_INFO_TAGS + '={ ./@name } {./process_constructor/@name }\n' +\
 	'\n' +\
 	'# ' + COMPOSITE_INFO_TAGS + ' decides what information should appear in the\n' +\
 	'# composite process subgraphs. This information is extracted from the\n' +\
-	'# XML files, as node attribute values. The option consists in a string\n' +\
-	'# of attribute names separated by commas (,). If the attribute does\n' +\
-	'# not belong to the <composite_process> node, then the full relative\n' +\
-	'# path to the respective node needs to be provided, separated by\n' +\
-	'# dashes (/). See the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	COMPOSITE_INFO_TAGS + '={ ./@name }\n' +\
 	'\n' +\
 	'# ' + LEAF_PORT_INFO_TAGS + ' decides what information should be plotted for\n' +\
-	'# the leaf process ports. This information is extracted from the XML\n' +\
-	'# files, as node attribute values. The option consists in a string of\n' +\
-	'# attribute names separated by commas (,). If the attribute does not\n' +\
-	'# belong to the <port> node, then the full relative path to the\n' +\
-	'# respective node needs to be provided, separated by dashes (/). See\n' +\
-	'# the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# the leaf process ports. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	LEAF_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
 	'# ' + COMPOSITE_PORT_INFO_TAGS + ' decides what information should be plotted\n' +\
-	'# for the composite process ports. This information is extracted from\n' +\
-	'# the XML files, as node attribute values. The option consists in a\n' +\
-	'# string of attribute names separated by commas (,). If the attribute\n' +\
-	'# does not belong to the <port> node, then the full relative path to\n' +\
-	'# the respective node needs to be provided, separated by dashes\n' +\
-	'# (/). See the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# for the composite process ports. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	COMPOSITE_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
 	'# ' + SIGNAL_INFO_TAGS + ' decides what information should appear on the\n' +\
-	'# signals. This information is extracted from the XML files, as node\n' +\
-	'# attribute values. The option consists in a string of attribute names\n' +\
-	'# separated by commas (,). If the attribute does not belong to the\n' +\
-	'# <signal> node, then the full relative path to the respective node\n' +\
-	'# needs to be provided, separated by dashes (/). See the usage example\n' +\
-	'# from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# signals. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	SIGNAL_INFO_TAGS + '=\n' +\
 	'\n' +\
