@@ -20,7 +20,7 @@ class CopyScripts(Command):
 			os.makedirs(scriptsFolder)
 		src_files = os.listdir(srcFolder)
 		for file_name in src_files:
-			if file_name.endswith('.py'):
+			if file_name.endswith('.py') and not '__' in file_name:
 				full_file_name = os.path.join(srcFolder, file_name)
 				if (os.path.isfile(full_file_name)):
 					shutil.copy(full_file_name, scriptsFolder)
