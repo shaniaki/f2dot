@@ -130,14 +130,12 @@ CONFIG_TEXT = '' +\
 	'# process nodes. This information is extracted from the XML files, \n' +\
 	'# through XPath queries, included in a custom layout grammar having \n' +\
 	'# the following rules:\n' +\
-	'#\n' +\
 	'# LABEL=R         LABEL=      -- a LABEL may/may not contain Row\n' +\
 	'#                                information\n' +\
 	'# R = R R         R = {D}     -- (any number of) Rows consist of Data\n' +\
 	'#                                surrounded by curly brackets {}\n' +\
 	'# D = D && D      D = query   -- Data on the same Row is separated by\n' +\
 	'#                                && and consists of XPath queries \n' +\
-	'# \n' +\
 	'# The tool has XPath 1.0 support, limited to ForSyDe usage. For a\n' +\
 	'# tutorial on how to build lable queries, please consult f2dot\'s\n' +\
 	'# web page.\n'+\

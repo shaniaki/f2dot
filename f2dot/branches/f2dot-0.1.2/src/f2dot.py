@@ -47,7 +47,7 @@ from forsydemodelparser import *
 from settings import *
 
 def main():
-	parser = argparse.ArgumentParser(version= 'f2dot' + __init__.__version__ +
+	parser = argparse.ArgumentParser(version= 'f2dot-' + __init__.__version__ +
                                      '  (c) 2014 ugeorge@kth.se',
                                      description='f2dot - a ForSyDe DOT plotter.')
 	required = parser.add_mutually_exclusive_group(required=True)	

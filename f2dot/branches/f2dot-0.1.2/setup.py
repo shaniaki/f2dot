@@ -9,5 +9,6 @@ setup(name = "f2dot",
 	packages = ['src','xpath'],
 	license = "BSD-3",
 	scripts = ["f2dot"],
+	install_requires=['pygraphviz',],
 	long_description = """Part of the ForSyDe (Formal System Design) suite, f2dot plots ForSyDe-XML intermedate model reppresentations to DOT graphs."""    
 )
