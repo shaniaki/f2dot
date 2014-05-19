@@ -188,7 +188,7 @@ class getBasicSignalInfo(object):
 		self.target = parentID + dic.ID_SEP + \
                       node.getAttribute(dic.TARGET_ATTR)
 		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
-		self.label = serveQueries(node, settings.portCompTags)
+		self.label = serveQueries(node, settings.signalTags)
 		logger.debug('Labels for signal %s:%s->%s:%s\n  %s', \
 					 self.source, self.source_port, self.target, \
                      self.target_port, self.label)
@@ -219,7 +219,7 @@ class getLeafPortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			info = serveQueries(parentNode, settings.portLeafTags)
+			info = serveQueries(port, settings.portLeafTags)
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
@@ -251,7 +251,7 @@ class getCompositePortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			info = serveQueries(parentNode, settings.portLeafTags)
+			info = serveQueries(port, settings.portCompTags)
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
