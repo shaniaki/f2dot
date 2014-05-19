@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 import src.f2dot
 
 src.f2dot.main ()

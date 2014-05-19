@@ -1,3 +1,12 @@
+'''          
+ * File:    settings.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: This file contains methods for collecting configuration options 
+            and initialize the settings object which holds the parameters
+            throughout the program execution. 
+ * License: BSD3
+'''
+
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -30,22 +39,51 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-'''          
- * File:    settings.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: provide an object containing the all run-time settings, 
-            which may be used by all modules.
- * License: BSD3
-'''
+import __init__
 
 import os
 import utils
 import logging
 import dictionary as dic
 
+## Creates a config file in the specified path if one does not 
+## exist already.
+# @param str $path 
+#        The directory where the configuration file should be
+# @return A string with the absolute path to the config file 
+def createConfFile(path):
+	confFile=os.path.join(path, dic.DEFAULT_CONFIG_FILENAME)
+	if not(os.path.isfile(confFile)):
+		f = open(confFile,'w')
+		f.write(dic.CONFIG_TEXT)
+		f.close()
+	return confFile
 
+## Creates a config file in the specified path irrespective of one
+## existing already.
+# @param str $path 
+#        The directory where the configuration file should be
+# @return A string with the absolute path to the config file 
+def createConfFileForce(path):
+	confFile=os.path.join(path, dic.DEFAULT_CONFIG_FILENAME)
+	f = open(confFile,'w')
+	f.write(dic.CONFIG_TEXT)
+	f.close()
+	return confFile
+
+## Model class for storing configuration  parameters
+#
+#  This class is a container for the configuration settins and
+#  provides methods to gather or parse from two main sources: the
+#  configuration file and the comman-line arguments
 class Settings:
-	def __init__(self, args): 
+    
+	## Class constructor
+	# @param Settings $self 
+	#        The object pointer
+	# @param ArgumentParser $args 
+	#        The comman-line arguments
+	def __init__(self, args):
 		self.logger = logging.getLogger('f2dot.settings')
 		self.logger.debug('Configuring the runtime execution...')
 
@@ -63,30 +101,19 @@ class Settings:
 		if args.config:
 			self.confFile = os.path.abspath(args.config)
 		else:
-			self.confFile = dic.createConfFile(self.inPath)
+			self.confFile = createConfFile(self.inPath)
 
-		settingsdic = {
-			dic.DIRECTION : '',
-			dic.DETAIL_LEVEL : '',
-			dic.FORMAT : '',
-			dic.PROG : '',
-			dic.LEAF_INFO_TAGS : '',
-			dic.COMPOSITE_INFO_TAGS : '',
-			dic.LEAF_PORT_INFO_TAGS : '',
-			dic.COMPOSITE_PORT_INFO_TAGS : '',
-			dic.SIGNAL_INFO_TAGS : '',
-			dic.COMPOSITE_BASE_COLOR : '',
-			dic.COMPOSITE_BOX_COLOR : '',
-			dic.LEAF_BASE_COLOR : ''
-			}
+		settingsdic = {}
 		for line in open(self.confFile):
 			li=line.strip()
+			if li.startswith("# works with  : f2dot"):
+				confVer = li.split("# works with  : f2dot-",1)[1]
+				if not confVer == __init__.__version__:
+					self.logger.warn('The config file was created by another version '
+									+ 'of the tool. Errors may occur.')
 			if not (li.startswith("#")) and ('=' in li):
 				tag, value = utils.strBeforeAfter(line,"=")
-				if tag in settingsdic:
-					settingsdic[tag] = value[:-1]
-				else:
-					self.logger.warn("Cannot recognize option %s. Will ignore it.", tag)
+				settingsdic[tag] = value[:-1]
 
 		self.__setDirection(settingsdic[dic.DIRECTION],args.dir)
 		self.__setDetailLevel(settingsdic[dic.DETAIL_LEVEL],args.level)
@@ -99,14 +126,16 @@ class Settings:
 		self.__setSignalTags(settingsdic[dic.SIGNAL_INFO_TAGS])
 		self.__setLeafColor(settingsdic[dic.LEAF_BASE_COLOR])
 		self.__setCompColor(settingsdic[dic.COMPOSITE_BASE_COLOR])
-		self.__setCompBoxColor(settingsdic[dic.COMPOSITE_BOX_COLOR])
+		self.__setCompBoxColor(settingsdic[dic.COMPOSITE_BOX_COLOR])	
+		self.__setClusterInports(settingsdic[dic.CLUSTER_INPUT_PORTS])
+		self.__setClusterOutports(settingsdic[dic.CLUSTER_OUTPUT_PORTS])
+		self.__setClusterSources(settingsdic[dic.CLUSTER_SOURCES])
+		self.__setClusterSinks(settingsdic[dic.CLUSTER_SINKS])
+		self.__setClusterOthers(settingsdic[dic.CLUSTER_OTHERS])
 
 		self.outPathAndFile = os.path.join(self.outPath, utils.getFileName(self.inFile) + '.' + self.format)
-
-		self.logger.debug(self.printSettings())
 		self.logger.debug('Runtime configuration successful')
-		
-	
+
 	def __setDirection(self, confString, commandArg):
 		if commandArg:
 			self.dir = commandArg
@@ -144,49 +173,19 @@ class Settings:
 			self.program='dot'
 
 	def __setLeafTags(self, confString):
-		self.leafTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.leafTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.leafTags.append(attr)
+		self.leafTags = utils.parseLableTags(confString)
 
 	def __setCompTags(self, confString):
-		self.compTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.compTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.compTags.append(attr)
+		self.compTags = utils.parseLableTags(confString)
 
 	def __setPortLeafTags(self, confString):
-		self.portLeafTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.portLeafTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.portLeafTags.append(attr)
+		self.portLeafTags = utils.parseLableTags(confString)
 
 	def __setPortCompTags(self, confString):
-		self.portCompTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.portCompTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.portCompTags.append(attr)
+		self.portCompTags = utils.parseLableTags(confString)
 
 	def __setSignalTags(self, confString):
-		self.signalTags = []
-		if confString:
-			for attr in utils.splitBy(confString,','):
-				if '/' in attr:
-					self.signalTags.append(utils.splitBy(attr,'/'))
-				else:
-					self.signalTags.append(attr)
+		self.signalTags = utils.parseLableTags(confString)
 
 	def __setLeafColor(self, confString):
 		if confString:
@@ -209,8 +208,61 @@ class Settings:
 		else:
 			self.logger.warn("Cannot find/recognize color %s. Choosing default (11,16,21)",self.compColorCoeffs)
 			self.compColorCoeffs = [11,16,21]
-			
 
+	def __setCompBoxColor(self, confString):
+		if confString:
+			self.compBoxColor = confString
+		else:
+			self.logger.warn("Cannot find/recognize color %s. Choosing default (#FCD975)",self.compBoxColor)
+			self.signalTags = "#FCD975"
+
+	def __setClusterInports(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterInports = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterInports = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_INPUT_PORTS)
+			self.clusterInports = True
+
+	def __setClusterOutports(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterOutports = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterOutports = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_OUTPUT_PORTS)
+			self.clusterOutports = True
+
+	def __setClusterSources(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterSources = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterSources = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_SOURCES)
+			self.clusterSources = True
+
+	def __setClusterSinks(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterSinks = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterSinks = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_SINKS)
+			self.clusterSinks = True
+
+	def __setClusterOthers(self, confString):
+		if confString.upper() in ["YES", "Y"]:
+			self.clusterOthers = True
+		elif confString.upper() in ["NO", "N"]:
+			self.clusterOthers = False
+		else:
+			self.logger.warn("Cannot recognize option %s for %s. Choosing the default (YES)", confString, dic.CLUSTER_OTHERS)
+			self.clusterOthers = True
+			
+	## Prints the current settings
+	# @param Settings $self The object pointer
 	def printSettings(self):
 		msg = 'The current settings are:\n' \
 			+ '\t* runPath : ' + self.runPath + '\n' \
@@ -232,5 +284,84 @@ class Settings:
 			+ '\t* signalTags : ' + str(self.signalTags) + '\n' \
 			+ '\t* leafColor : ' + self.leafColor + '\n' \
 			+ '\t* compBoxColor : ' + self.compBoxColor + '\n' \
-			+ '\t* compColorCoeffs : ' + str(self.compColorCoeffs)
+			+ '\t* clusterInports : ' + str(self.clusterInports)+ '\n' \
+			+ '\t* clusterOutports : ' + str(self.clusterOutports)+ '\n' \
+			+ '\t* clusterSources : ' + str(self.clusterSources)+ '\n' \
+			+ '\t* clusterSinks : ' + str(self.clusterSinks)+ '\n' \
+			+ '\t* clusterOthers : ' + str(self.clusterOthers)
 		return msg
+
+    ## @var logger 
+	#  Logger (logging object)
+
+    ## @var runPath 
+	#  The path where the runnable is located (str)
+
+    ## @var inPathAndFile 
+	#  The full path to the input file (str)
+
+    ## @var inFile 
+	#  Input file name (str)
+
+    ## @var rootProcess
+	#  The top module (str)
+
+    ## @var outPath 
+	#  Absolute path to the output directory (str)
+
+    ## @var confFile 
+	#  Absolte path to the configuration file (str)
+
+    ## @var outPathAndFile 
+	#  Absolute path to the output file (str)
+
+    ## @var dir 
+	#  The graph direction (str)
+
+    ## @var maxLevel 
+	#  The las hierarchical level plotted in the graph; at this level composit pocessesare turned into "black boxes" (int)
+
+    ## @var format 
+	#  The output file format (str)
+
+    ## @var program 
+	#  The graph generation program (str)
+
+    ## @var leafTags 
+	#  The XPath queries for leaf process lables, grouped in lists corresponding to their position (list(list(str)))
+
+    ## @var compTags 
+	#  The XPath queries for composite process lables, grouped in lists corresponding to their position (list(list(str)))
+
+    ## @var portLeafTags 
+	#  The XPath queries for leaf process ports lables, grouped in lists corresponding to their position (list(list(str)))
+
+    ## @var portCompTags 
+	#  The XPath queries for composite process ports lables, grouped in lists corresponding to their position (list(list(str)))
+
+	## @var signalTags
+    #  The XPath queries for signal lables, grouped in lists corresponding to their position (list(list(str)))
+
+    ## @var leafColor 
+	#  The hex value for the color of the leaf processes (str)
+
+    ## @var compBoxColor 
+	#  The hex value for the color of the composite processes which are turned into "black boxes" (str)
+
+    ## @var compColorCoeffs 
+	#  Coefficients to calculate the the colour gradients for the composite process clusters (list(int))
+
+    ## @var clusterInports 
+	#  Enables clustering of input composite process ports (bool)
+
+    ## @var clusterOutports 
+	#  Enables clustering of output composite process ports (bool)
+
+    ## @var clusterSources 
+	#  Enables clustering of source processes (bool)
+
+    ## @var clusterSinks 
+	#  Enables clustering of sink processes (bool)
+
+    ## @var clusterOthers 
+	#  Enables clustering of other processes (not yet clustered) (bool)
