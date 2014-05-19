@@ -1,3 +1,10 @@
+'''          
+ * File:    dictionary.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: providing consistent name tags for this project independent
+            on the changes in ForSyDe
+ * License: BSD3
+'''
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -30,23 +37,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-'''          
- * File:    dictionary.py
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: providing consistent name tags for this project independent
-            on the changes in ForSyDe
- * License: BSD3
-'''
-
 import os
 import __init__
-from sys import stdin
 
-# project conventions
+## @name Project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
+PAT_START='{'
+PAT_STOP='}'
+PAT_SEP='&&'
 
-# configuration settings names convention
+## @name Config file tags
 DIRECTION="DIRECTION"
 DETAIL_LEVEL="DETAIL_LEVEL"
 FORMAT="FORMAT"
@@ -59,8 +60,13 @@ SIGNAL_INFO_TAGS="SIGNAL_INFO_TAGS"
 COMPOSITE_BASE_COLOR="COMPOSITE_BACKGROUND_COLOR_COEFFICIENTS"
 LEAF_BASE_COLOR="LEAF_BASE_COLOR"
 COMPOSITE_BOX_COLOR="COMPOSITE_BOX_COLOR"
+CLUSTER_INPUT_PORTS="CLUSTER_INPUT_PORTS"
+CLUSTER_OUTPUT_PORTS="CLUSTER_OUTPUT_PORTS"
+CLUSTER_SOURCES="CLUSTER_SOURCES"
+CLUSTER_SINKS="CLUSTER_SINKS"
+CLUSTER_OTHERS="CLUSTER_OTHERS"
 
-# ForSyDe XML tags convention
+## @name ForSyDe-XML convention
 PROCESS_NETWORK_TAG='process_network'
 COMPOSITE_PROCESS_TAG='composite_process'
 LEAF_PROCESS_TAG='leaf_process'
@@ -80,12 +86,12 @@ SOURCE_PORT_ATTR='source_port'
 TARGET_PORT_ATTR='target_port'
 
 
-# default configuration text
-CONFIG_TEXT = \
+## @name default config file text
+CONFIG_TEXT = '' +\
 	'# file        : ' + DEFAULT_CONFIG_FILENAME + ' \n' +\
 	'# description : automatically generated configuration file\n' +\
 	'# usage       : change the right-hand values as suggested \n' +\
-	'# works with  : f2dot ' + __init__.__version__ + '\n' +\
+	'# works with  : f2dot-' + __init__.__version__ + '\n' +\
 	'# ####################################################################\n' +\
 	'\n' +\
 	'# The direction of the plotted graph is controlled with\n' +\
@@ -121,58 +127,82 @@ CONFIG_TEXT = \
 	PROG + '=dot\n' +\
 	'\n' +\
 	'# ' + LEAF_INFO_TAGS + ' decides what information should appear in the leaf\n' +\
-	'# process nodes. This information is extracted from the XML files, as\n' +\
-	'# node attribute values. The option consists in a string of attribute\n' +\
-	'# names separated by commas (,). If the attribute does not belong to\n' +\
-	'# the <leaf_process> node, then the full relative path to the\n' +\
-	'# respective node needs to be provided, separated by dashes (/)\n' +\
-	'# \n' +\
-	'# Example: to label leaf processes with both process names and their\n' +\
-	'# process_constructor types, one needs to provide the attribute names\n' +\
-	'# in the following way: \n' +\
-	'# ' + LEAF_INFO_TAGS + '=name,process_constructor/name\n' +\
+	'# process nodes. This information is extracted from the XML files, \n' +\
+	'# through XPath queries, included in a custom layout grammar having \n' +\
+	'# the following rules:\n' +\
+	'# LABEL=R         LABEL=      -- a LABEL may/may not contain Row\n' +\
+	'#                                information\n' +\
+	'# R = R R         R = {D}     -- (any number of) Rows consist of Data\n' +\
+	'#                                surrounded by curly brackets {}\n' +\
+	'# D = D && D      D = query   -- Data on the same Row is separated by\n' +\
+	'#                                && and consists of XPath queries \n' +\
+	'# The tool has XPath 1.0 support, limited to ForSyDe usage. For a\n' +\
+	'# tutorial on how to build lable queries, please consult f2dot\'s\n' +\
+	'# web page.\n'+\
 	'\n' +\
-	LEAF_INFO_TAGS + '=name\n' +\
+	LEAF_INFO_TAGS + '={ ./@name } {./process_constructor/@name }\n' +\
 	'\n' +\
 	'# ' + COMPOSITE_INFO_TAGS + ' decides what information should appear in the\n' +\
 	'# composite process subgraphs. This information is extracted from the\n' +\
-	'# XML files, as node attribute values. The option consists in a string\n' +\
-	'# of attribute names separated by commas (,). If the attribute does\n' +\
-	'# not belong to the <composite_process> node, then the full relative\n' +\
-	'# path to the respective node needs to be provided, separated by\n' +\
-	'# dashes (/). See the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
-	COMPOSITE_INFO_TAGS + '=name\n' +\
+	COMPOSITE_INFO_TAGS + '={ ./@name }\n' +\
 	'\n' +\
 	'# ' + LEAF_PORT_INFO_TAGS + ' decides what information should be plotted for\n' +\
-	'# the leaf process ports. This information is extracted from the XML\n' +\
-	'# files, as node attribute values. The option consists in a string of\n' +\
-	'# attribute names separated by commas (,). If the attribute does not\n' +\
-	'# belong to the <port> node, then the full relative path to the\n' +\
-	'# respective node needs to be provided, separated by dashes (/). See\n' +\
-	'# the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# the leaf process ports. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	LEAF_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
 	'# ' + COMPOSITE_PORT_INFO_TAGS + ' decides what information should be plotted\n' +\
-	'# for the composite process ports. This information is extracted from\n' +\
-	'# the XML files, as node attribute values. The option consists in a\n' +\
-	'# string of attribute names separated by commas (,). If the attribute\n' +\
-	'# does not belong to the <port> node, then the full relative path to\n' +\
-	'# the respective node needs to be provided, separated by dashes\n' +\
-	'# (/). See the usage example from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# for the composite process ports. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	COMPOSITE_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
-	'# SIGNAL_INFO_TAGS decides what information should appear on the\n' +\
-	'# signals. This information is extracted from the XML files, as node\n' +\
-	'# attribute values. The option consists in a string of attribute names\n' +\
-	'# separated by commas (,). If the attribute does not belong to the\n' +\
-	'# <signal> node, then the full relative path to the respective node\n' +\
-	'# needs to be provided, separated by dashes (/). See the usage example\n' +\
-	'# from ' + LEAF_INFO_TAGS + '.\n' +\
+	'# ' + SIGNAL_INFO_TAGS + ' decides what information should appear on the\n' +\
+	'# signals. This information is extracted from the\n' +\
+	'# XML files, through XPath queries, included in a custom layout\n' +\
+	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
+	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
+	'# to build lable queries, please consult f2dot\'s web page.\n' +\
 	'\n' +\
 	SIGNAL_INFO_TAGS + '=\n' +\
+	'\n' +\
+	'# ' + CLUSTER_INPUT_PORTS + ' switches whether or not the nodes corresponding\n' +\
+	'# to the input ports are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_INPUT_PORTS + '=YES\n' +\
+	'\n' +\
+	'# ' + CLUSTER_OUTPUT_PORTS + ' switches whether or not the nodes corresponding\n' +\
+	'# to the input ports are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_OUTPUT_PORTS + '=YES\n' +\
+	'\n' +\
+	'# ' + CLUSTER_SOURCES + ' switches whether or not the nodes corresponding to\n' +\
+	'# the source processes are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_SOURCES + '=NO\n' +\
+	'\n' +\
+	'# ' + CLUSTER_SINKS + ' switches whether or not the nodes corresponding to the\n' +\
+	'# sink processes are grouped together.\n' +\
+	'\n' +\
+	CLUSTER_SINKS + '=NO\n' +\
+	'\n' +\
+	'# ' + CLUSTER_OTHERS + ' switches whether or not the other nodes (not\n' +\
+	'# clustered already) are grouped inside one cluster, for physical\n' +\
+	'# separation from the other nodes.\n' +\
+	'\n' +\
+	CLUSTER_OTHERS + '=NO\n' +\
 	'\n' +\
 	'# The ' + LEAF_BASE_COLOR + ' option controls the color of the leaf process\n' +\
 	'# nodes in the output graph. he format of the color is "#RGB" where R,\n' +\
@@ -197,19 +227,5 @@ CONFIG_TEXT = \
 	'\n' +\
 	COMPOSITE_BASE_COLOR + '=11,16,21\n'
 
-def createConfFile(path):
-	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
-	if not(os.path.isfile(confFile)):
-		f = open(confFile,'w')
-		f.write(CONFIG_TEXT)
-		f.close()
-	return confFile
-
-def createConfFileForce(path):
-	confFile=os.path.join(path, DEFAULT_CONFIG_FILENAME)
-	f = open(confFile,'w')
-	f.write(CONFIG_TEXT)
-	f.close()
-	return confFile
 
 

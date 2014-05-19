@@ -1,3 +1,12 @@
+'''          
+ * File:    f2dot.py
+ * Author:  George Ungureanu <ugeorge@kth.se> 
+ * Purpose: This is the driver of the f2dot program. It parses the
+            command line arguments, initializes a Settings object and
+            calls the parser method(s)
+ * License: BSD3
+'''
+
 '''
 Copyright (c) 2014, George Ungureanu 
 All rights reserved.
@@ -30,23 +39,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-'''          
- * File:    f2dot.py -- the main running script of the program.
- * Author:  George Ungureanu <ugeorge@kth.se> 
- * Purpose: parsing the arguments, configuring the run-time and 
-            calling the parser methods
- * License: BSD3
-'''
 import os
 import argparse
 import logging
 import __init__
-import dictionary as dic
-from settings import Settings
-from parsers import ForsydeModelParser
+from forsydemodelparser import *
+from settings import *
 
 def main():
-	parser = argparse.ArgumentParser(version= 'f2dot' + __init__.__version__ +
+	parser = argparse.ArgumentParser(version= 'f2dot-' + __init__.__version__ +
                                      '  (c) 2014 ugeorge@kth.se',
                                      description='f2dot - a ForSyDe DOT plotter.')
 	required = parser.add_mutually_exclusive_group(required=True)	
@@ -67,26 +68,25 @@ def main():
                         file, a config file having the default settings will be generated \
                         there.")
 	parser.add_argument("--dir", help="Graph direction (LR,TB - \
-                        default LR). Overrides the " + dic.DIRECTION + " setting in the \
-                        configuration file")
+                        default LR). Overrides the setting in the configuration file")
 	parser.add_argument("--level", help="Depth of plotting or maximum \
                         level of detail before composite processes are displayed as black \
-                        boxes. Overrides the "+ dic.DETAIL_LEVEL + " setting in the \
-                        configuration file.")
+                        boxes. Overrides the setting in the configuration file.")
 	parser.add_argument("--prog", help="Graph generation algorithm \
-                        (neato, dot, twopi, circo, fdp, nop). Overrides the " + dic.PROG +
-                        " setting in the configuration file.")
+                        (neato, dot, twopi, circo, fdp, nop). Overrides the setting in \
+                        the configuration file.")
 	parser.add_argument("--format", help="Output file format (canon, \
                         cmap, cmapx, cmapx_np, dia, dot, fig, gd, gd2, gif, hpgl, imap, \
                         imap_np, ismap, jpe, jpeg, jpg, mif, mp, pcl, pdf, pic, plain, \
                         plain-ext, png, ps, ps2, svg, svgz, vml, vmlz, vrml, vtx, wbmp, \
-                        xdot, xlib - default dot). Overrides the " + dic.FORMAT +" setting \
+                        xdot, xlib - default dot). Overrides the setting \
                         in the configuration file.")
 	args = parser.parse_args()
 
-	print "\n\n===================================================="
-	print "                      f2dot                         "
-	print "====================================================\n"	
+	print 
+	print "               =            f2dot             = "
+	print "               Part of the ForSyDe design suite "	
+	print 
 
 	logger = logging.getLogger('f2dot')
 	logger.setLevel(logging.DEBUG)
@@ -109,17 +109,19 @@ def main():
 		fh.setLevel(logging.DEBUG)
 	
 	if args.generate_config:
-		dic.createConfFileForce(os.getcwd())
-		logger.info('Generated config file, Now exiting.')
+		createConfFileForce(os.getcwd())
+		logger.info('Generated config file in current directory, Now exiting.')
 		os._exit(1)
     
 	logger.debug('Starting the program execution...')
 	settings = Settings(args)
+	logger.debug(settings.printSettings())
 
 	parser = ForsydeModelParser(settings)
 	parser.plotModel()
 	logger.debug('Program executed succesfully')
 	return
 
-if __name__=='__main__':
-    main()
+if __name__ =='__main__':
+	main()
+
