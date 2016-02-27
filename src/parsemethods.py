@@ -79,7 +79,11 @@ class getBasicCompositeInfo(object):
 		self.name = node.getAttribute(dic.NAME_ATTR)
 		self.component_name = node.getAttribute(dic.COMPONENT_ATTR)
 		self.ID = parentID + dic.ID_SEP + self.name
-		self.label = serveQueries(node, settings.compTags)
+		var1, exp = settings.compTags		
+		variable = str(serveQueries(node, [var1]))
+		if var1 != '':
+			exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+		self.label = serveQueries(node, exp)
 		logger.debug('Labels for composite process <' + self.ID + '>:\n ' 
 				+ str(self.label))
 
@@ -113,7 +117,11 @@ class getBasicLeafInfo(object):
 		context = xpath.XPathContext(node)
 		self.name = node.getAttribute(dic.NAME_ATTR)
 		self.ID = parentID + dic.ID_SEP + self.name
-		self.label = serveQueries(node, settings.leafTags)
+		var1, exp = settings.leafTags		
+		variable = str(serveQueries(node, [var1]))
+		if var1 != '':
+			exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+		self.label = serveQueries(node, exp)
 		logger.debug('Labels for leaf process <' + self.ID + '>: \n '
                      + str(self.label))
 
@@ -150,7 +158,11 @@ class getBasicPortInfo(object):
 		self.bound_process = parentID + dic.ID_SEP + \
                              node.getAttribute(dic.BOUND_PROCESS_ATTR)
 		self.bound_port = node.getAttribute(dic.BOUND_PORT_ATTR)
-		self.label = serveQueries(node, settings.portCompTags)
+		var1, exp = settings.portCompTags		
+		variable = str(serveQueries(node, [var1]))
+		if var1 != '':
+			exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+		self.label = serveQueries(node, exp)
 		logger.debug('Labels for port <' + self.ID + '>: \n ' +
                      str(self.label))
 
@@ -188,7 +200,11 @@ class getBasicSignalInfo(object):
 		self.target = parentID + dic.ID_SEP + \
                       node.getAttribute(dic.TARGET_ATTR)
 		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
-		self.label = serveQueries(node, settings.signalTags)
+		var1, exp = settings.signalTags		
+		variable = str(serveQueries(node, [var1]))
+		if var1 != '':
+			exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+		self.label = serveQueries(node, exp)
 		logger.debug('Labels for signal %s:%s->%s:%s\n  %s', \
 					 self.source, self.source_port, self.target, \
                      self.target_port, self.label)
@@ -219,7 +235,12 @@ class getLeafPortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			info = serveQueries(port, settings.portLeafTags)
+			var1, exp = settings.portLeafTags
+			variable = str(serveQueries(port, [var1]))
+			if var1 != '':
+				exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+			info = serveQueries(port, exp)
+			logger.debug('Got port info:' + str(info))
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
@@ -251,7 +272,11 @@ class getCompositePortList(object):
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
 			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
-			info = serveQueries(port, settings.portCompTags)
+			var1, exp = settings.portCompTags		
+			variable = str(serveQueries(port, [var1]))
+			if var1 != '':
+				exp = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable[0][0][0])), l1)), exp)
+			self.label = serveQueries(port, exp)
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))

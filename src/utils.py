@@ -115,13 +115,18 @@ def computeBackground(coeffs, level):
 #        model
 # @return A list of lists of queries of type [[row1, ...], [row2, ...], ...]
 def parseLableTags(string):
+	pat_s = '\s*\\' + dic.VAR_START + '([^' + dic.VAR_STOP + ']*)\\' \
+			+ dic.VAR_STOP + '\s*'
+	pat = re.compile(pat_s)
+	var = pat.findall(string)
+
 	lst = []
 	pat_s = '\s*\\' + dic.PAT_START + '([^' + dic.PAT_STOP + ']*)\\' \
 			+ dic.PAT_STOP + '\s*'
 	pat = re.compile(pat_s)
 	for line in pat.findall(string):
 		lst.append(line.split(dic.PAT_SEP))
-	return lst
+	return var,lst
 
 ## Reverse replace. Replaces the last number of occurrences of a
 ## string with another string
@@ -133,5 +138,6 @@ def parseLableTags(string):
 def rreplace(s, old, new, occurrence):
 	li = s.rsplit(old, occurrence)
 	return new.join(li)
+
 
 

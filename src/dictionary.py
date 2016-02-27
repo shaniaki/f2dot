@@ -43,6 +43,9 @@ import __init__
 ## @name Project conventions
 DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
+VAR_START='<<'
+VAR_STOP='>>'
+PAT_VAR='$1'
 PAT_START='{'
 PAT_STOP='}'
 PAT_SEP='&&'
