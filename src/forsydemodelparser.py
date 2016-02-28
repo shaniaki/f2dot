@@ -81,7 +81,7 @@ class ForsydeModelParser:
 	# @param ForsydeModelParser $self The object pointer
 	def plotModel(self):
 		G = pgv.AGraph(directed=True, rankdir=self.set.dir,
-                       fontname='Helvetica', strict=True, overlap='prism',
+                       fontname='Helvetica', strict=False, overlap='prism',
                        splines='true')
 
 		bgColor = utils.computeBackground(self.set.compColorCoeffs,1)
