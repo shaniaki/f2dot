@@ -39,8 +39,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-import xml.dom.minidom as xmlparser
-import pygraphviz as pgv
 import os
 import logging
 import utils
@@ -58,8 +56,8 @@ class ForsydeModelParser:
 	# @param Settings $settings The f2dot.settings.Settings object
 	#        holding the run-time settings
 	def __init__(self, settings): 
-		self.logger = logging.getLogger('f2dot.parser')
-		self.logger.debug('Initializing the parser...')
+		self.logger = logging.getLogger('f2dot.forsydeparser')
+		self.logger.debug('Initializing the ForSyDe parser...')
 		self.set = settings
 		if settings.dir == "TB":
 			self.vertical = True
@@ -79,13 +77,10 @@ class ForsydeModelParser:
 	## Function to parse a ForSyDe-XML model and plot a DOT graph,
 	## according to the settings.
 	# @param ForsydeModelParser $self The object pointer
-	def plotModel(self):
-		G = pgv.AGraph(directed=True, rankdir=self.set.dir,
-                       fontname='Helvetica', strict=False, overlap='prism',
-                       splines='true')
+	def plotModel(self, graph, xmldoc):
 
 		bgColor = utils.computeBackground(self.set.compColorCoeffs,1)
-		frame = G.subgraph( \
+		frame = graph.subgraph( \
 			name="cluster_" + self.set.inFile, \
 			label = self.set.rootProcess, \
 			style = 'filled, rounded', \
@@ -94,16 +89,10 @@ class ForsydeModelParser:
 
 		self.logger.info('Starting the parser on process network "' +
                          self.set.rootProcess + '"...')
-		self.__parseXmlFile(self.set.inPathAndFile, frame, self.set.rootProcess, 2)
-	
-		G.write(self.set.outPathAndFile)
-		G.draw(path=self.set.outPathAndFile, format=self.set.format,
-               prog=self.set.program)
-		self.logger.info('Process network plotted in ' +
-                         self.set.outPathAndFile)
+		self.__parseXmlFile(xmldoc, frame, self.set.rootProcess, 2)
 
-	def __parseXmlFile(self, xmlFile, graph, parentId, level):
-		root = xmlparser.parse(xmlFile)
+
+	def __parseXmlFile(self, root, graph, parentId, level):
 		self.logger.debug("Parsing <"+ parentId + ">")
 
 		graph.add_node('dummy',style='invisible')
@@ -137,7 +126,7 @@ class ForsydeModelParser:
 	
 					#build composite process information
 					list_of_ports = getCompositePortList(composite, self.set)
-					processLabel = buildRecord(compositeInfo, list_of_ports)
+					processLabel = buildRecord(compositeInfo.label, list_of_ports)
 					if not list_of_ports.in_ports and self.set.clusterSources:
 						clusterName = 'sources'
 					elif not list_of_ports.out_ports and self.set.clusterSinks:
@@ -187,7 +176,7 @@ class ForsydeModelParser:
 				leafInfo = getBasicLeafInfo(leaf, parentId, self.set)
 				list_of_leaves.append(leafInfo.ID)
 				list_of_ports = getLeafPortList(leaf, self.set)
-				processLabel = buildRecord(leafInfo, list_of_ports)
+				processLabel = buildRecord(leafInfo.label, list_of_ports)
 				if not list_of_ports.in_ports and self.set.clusterSources:
 					clusterName = 'sources'
 				elif not list_of_ports.out_ports and self.set.clusterSinks:
@@ -437,7 +426,7 @@ class getBasicPortInfo(object):
 		self.bound_process = parentID + dic.ID_SEP + \
                              node.getAttribute(dic.BOUND_PROCESS_ATTR)
 		self.bound_port = node.getAttribute(dic.BOUND_PORT_ATTR)
-		var1, exp = settings.portCompTags
+		var1, exp  = settings.portCompTags
 		self.label = getXpathVarList(node, exp, var1)
 		logger.debug('Labels for port <' + self.ID + '>: \n ' +
                      str(self.label))
@@ -507,7 +496,7 @@ class getLeafPortList(object):
 		self.out_ports = []
 		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
 			port_name = port.getAttribute(dic.NAME_ATTR)
-			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
+			port_dir  = port.getAttribute(dic.DIRECTION_ATTR)
 			var1, exp = settings.portLeafTags
 			info = getXpathVarList(port, exp, var1)
 			logger.debug('Got port info:' + str(info))

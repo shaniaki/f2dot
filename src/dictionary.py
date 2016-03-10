@@ -90,6 +90,7 @@ TARGET_PORT_ATTR='target_port'
 
 ## @name SDF3-XML convention
 SDF_TAG='sdf'
+SDF_APPLICATION_GRAPH_TAG='sdf'
 SDF_ACTOR_TAG='actor'
 SDF_PORT_TAG='port'
 SDF_CHANNEL_TAG='channel'

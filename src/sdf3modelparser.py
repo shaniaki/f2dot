@@ -39,8 +39,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-import xml.dom.minidom as xmlparser
-import pygraphviz as pgv
 import os
 import logging
 import utils
@@ -61,6 +59,10 @@ class Sdf3ModelParser:
 		self.logger = logging.getLogger('f2dot.sdf3parser')
 		self.logger.debug('Initializing the parser...')
 		self.set = settings
+		if settings.dir == "TB":
+			self.vertical = True
+		else:
+			self.vertical = False
 		
 		## @var logger 
 		#  Logger for this class
@@ -75,17 +77,12 @@ class Sdf3ModelParser:
 	## Function to parse a ForSyDe-XML model and plot a DOT graph,
 	## according to the settings.
 	# @param Sdf3ModelParser $self The object pointer
-	def plotModel(self):
-		G = pgv.AGraph(directed=True, rankdir=self.set.dir,
-                       fontname='Helvetica', strict=False, overlap='prism',
-                       splines='true')
-
-		root = xmlparser.parse(self.set.inPathAndFile)
-		appName = root.getElementsByTagName(dic.APPLICATION_GRAPH_TAG)[0].getAttribute('name')
+	def plotModel(self, graph, xmldoc):
+		appName = xmldoc.getElementsByTagName(dic.SDF_APPLICATION_GRAPH_TAG)[0].getAttribute('name')
 		self.logger.debug("Parsing <"+ appName + ">")
 
 		bgColor = utils.computeBackground(self.set.compColorCoeffs,1)
-		frame = G.subgraph( \
+		frame = graph.subgraph( \
 			name="cluster_" + self.set.inFile, \
 			label = appName, \
 			style = 'filled, rounded', \
@@ -94,13 +91,8 @@ class Sdf3ModelParser:
 
 		self.logger.info('Starting the parser on process network "' +
                          self.set.rootProcess + '"...')
-		self.__parseXmlFile(root, frame)
+		self.__parseXmlFile(xmldoc, frame)
 	
-		G.write(self.set.outPathAndFile)
-		G.draw(path=self.set.outPathAndFile, format=self.set.format, prog=self.set.program)
-		self.logger.info('Process network plotted in ' +
-                         self.set.outPathAndFile)
-
 	def __parseXmlFile(self, root, graph):
 		graph.add_node('dummy',style='invisible')
 
@@ -112,70 +104,47 @@ class Sdf3ModelParser:
 			for actor in sdf.getElementsByTagName(dic.SDF_ACTOR_TAG):
 
 				actorId    = actor.getAttribute('name')
-				var1, exp  = settings.leafTags                  # TODO: different labels for different formats
-				actorLabel = getXpathVarList(node, exp, var1)
+				var1, exp  = self.set.leafTags                  # TODO: different labels for different formats
+				actorLabel = getXpathVarList(actor, exp, var1)
+				logger.debug('Labels for leaf process <' + actorId + '>: ' + str(actorLabel))
 
 				list_of_actors.append(actorId)				
-				list_of_ports = getLeafPortList(leaf, self.set)
+				list_of_ports = getActorPortList(actor, self.set)
 				nodeLabel = buildRecord(actorLabel, list_of_ports)
 
-				# add leaf process node to the appropriate cluster
-				graph.add_node("cluster_" + self.set.inFile, \
-					node = actorId, 
-					label = nodeLabel, \
-					fillcolor = self.set.leafColor)
+				# add actor node to the graph
+				graph.add_node(actorId, shape='record',\
+                    label = nodeLabel, style='rounded,filled',  fontname='Helvetica', fontsize='12',\
+                    fillcolor = self.set.leafColor)
 
 			self.logger.debug( 'Found ' + str(len(list_of_actors)) + ' actors' 
 				+ ' \n\t' + str(list_of_actors))
 
 			
 			#channes child nodes
-			for channel in sdf.getElementsByTagName(dic.channel_TAG):
-				channelInfo = getBasicChannelInfo(channel, parentId, self.set)
+			for channel in sdf.getElementsByTagName(dic.SDF_CHANNEL_TAG):
+				channelInfo = getBasicChannelInfo(channel, self.set)
 
-				#build channel info
 				if self.vertical:
 					compassIn='n'
 					compassOut='s'
 				else:
 					compassIn='w'
 					compassOut='e'
-				if channelInfo.source in list_of_actors:
-					# source is a leaf process
-					if channelInfo.target in list_of_actors:
-						# target is a leaf process
-						src = channelInfo.source
-						dst = channelInfo.target
-						src_p = channelInfo.source_port + ':' + compassOut
-						dst_p = channelInfo.target_port + ':' + compassIn
-					else:
-						# target is a composite process
-						src = channelInfo.source
-						dst = channelInfo.target + dic.ID_SEP + channelInfo.target_port
-						src_p = channelInfo.source_port + ':' + compassOut
-						dst_p = '' + compassIn
-				else:
-					# source is a composite process
-					if channelInfo.target in list_of_leaves:
-						# target is a leaf process
-						src = channelInfo.source + dic.ID_SEP + channelInfo.source_port
-						dst = channelInfo.target
-						src_p = '' + compassOut
-						dst_p = channelInfo.target_port + ':' + compassIn
-					else:
-						# target is a composite process
-						src = channelInfo.source + dic.ID_SEP + channelInfo.source_port
-						dst = channelInfo.target + dic.ID_SEP + channelInfo.target_port
-						src_p = '' + compassOut
-						dst_p = '' + compassIn
+
+				src = channelInfo.source
+				dst = channelInfo.target
+				src_p = channelInfo.source_port + ':' + compassOut
+				dst_p = channelInfo.target_port + ':' + compassIn
 
 				#add edge
 				graph.add_edge(src, dst, tailport=src_p, headport=dst_p, \
-					style=style, penwidth=penwidth, label=prettyPrintLables(channelInfo.label))
+					label=prettyPrintLables(channelInfo.label))
 				self.logger.debug( 'Added channel %s:%s->%s:%s',src, src_p, dst, dst_p )
 
 		# flush the root node
 		del root
+
 
 
 ## Object class for extracting all ports from a leaf process and yeld
@@ -205,7 +174,8 @@ class getActorPortList(object):
 			port_dir  = port.getAttribute('type')
 			var1, exp = settings.portLeafTags
 			info = getXpathVarList(port, exp, var1)
-			logger.debug('Got port info:' + str(info))
+			logger.debug('Labels for port <' + port_name + '>: ' +
+                     str(info))
 			# build port lists having tuples of name and info
 			if port_dir == dic.INPUT_DIR:
 				self.in_ports.append((port_name, info))
@@ -231,12 +201,10 @@ class getBasicChannelInfo(object):
 	# @param Node $node
     #        The \c xml.dom.Node object representing the composite
     #        process
-    # @param str $parentID
-    #        The unique ID of its parent process
     # @param Settings $settings
     #        The f2dot.settings.Settings object holding the run-time
     #        settings
-	def __init__(self, node, parentID, settings):
+	def __init__(self, node, settings):
 		self.name = node.getAttribute('name')
 		self.source = node.getAttribute('srcActor')
 		self.source_port = node.getAttribute('srcPort')

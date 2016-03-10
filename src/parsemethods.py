@@ -120,8 +120,8 @@ def prettyPrintLables(lstOfLabels):
 # @param getLeafPortList|getCompositePortList $listOfPorts
 #        List of ports associated with their information
 # @return A record string which is parsed by Pygraphviz to build nodes
-def buildRecord(processInfo, listOfPorts):
-	record = '{ {'
+def buildRecord(processInfoLabel, listOfPorts):
+	record = '{ { '
 
 	for in_port in listOfPorts.in_ports:
 		portID = in_port[0]
@@ -130,7 +130,7 @@ def buildRecord(processInfo, listOfPorts):
 		record = record + '<' + portID + '>'+ portLabel + '|'
 	record = record.rstrip('|')
 
-	nodeLabel = prettyPrintLables(processInfo.label)
+	nodeLabel = prettyPrintLables(processInfoLabel)
 	record = record + ' } | { ' + nodeLabel + ' } | { '
 
 	for out_port in listOfPorts.out_ports:
@@ -139,6 +139,6 @@ def buildRecord(processInfo, listOfPorts):
 		portLabel = prettyPrintLables(portInfoList)
 		record = record + '<' + portID + '>' +  portLabel + '|'
 	record = record.rstrip('|')		
-	record = record + '} }'
+	record = record + ' } }'
 	return record
 
