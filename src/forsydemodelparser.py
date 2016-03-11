@@ -39,6 +39,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+import xml.dom.minidom as xmlparser
 import os
 import logging
 import utils
@@ -148,7 +149,7 @@ class ForsydeModelParser:
 
 				#else 
 				#build composite process information
-				xmlFile = os.path.join(self.set.inPath, compositeInfo.component_name) + '.xml'
+				xmlRoot = xmlparser.parse(os.path.join(self.set.inPath, compositeInfo.component_name) + '.xml')
 				bgColor = utils.computeBackground(self.set.compColorCoeffs,level)
 				if self.set.clusterOthers:
 					clusterName = 'others'
@@ -167,7 +168,7 @@ class ForsydeModelParser:
 				self.logger.debug( 'Found composite process ' + compositeInfo.ID 
 									+ ' in <' + parentId 
 									+ '>. Building a subgraph in cluster ' + clusterName)
-				self.__parseXmlFile(xmlFile, frame, compositeInfo.ID, level + 1)
+				self.__parseXmlFile(xmlRoot, frame, compositeInfo.ID, level + 1)
 
 			#child leaf processes
 			for leaf in pn.getElementsByTagName(dic.LEAF_PROCESS_TAG):

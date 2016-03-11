@@ -94,8 +94,8 @@ def getXpathList(node, queryList):
 #        List of querries, as defined by the user
 # @return A list of lists if pieces of information
 # @see getXpathList
-def getXpathStr(node, query):
-	return str(getXpathList(node, query)[0][0][0]);
+def getXpathStrs(node, query):
+	return map ((lambda s: str(s)), getXpathList(node, query)[0][0]);
 
 
 ## Function that pre-extracts a set of varialbes through XPath querries and 
@@ -110,9 +110,19 @@ def getXpathStr(node, query):
 # @see getXpathList
 def getXpathVarList(node, queryList, var=''):
 	if var:	
-		variable = getXpathStr(node, [var])
-		queryList = map ((lambda l1: map ((lambda s: s.replace(dic.PAT_VAR,variable)), l1)), queryList)
+		variables = {}
+		for i, v in enumerate(getXpathStrs(node, [var])):
+			variables['$'+str(i+1)] = v
+		queryList = map ((lambda l1: map (
+                           (lambda s: reduce(
+                              lambda x, y: x.replace(y, variables[y]), variables, 
+                            s)), 
+                          l1)), queryList)
+		#print queryList
 	return getXpathList(node, queryList)
+
+
+	
 
 ## Print a list of lables in a readable way (rows, columns), as
 ## defined by the config syntax
