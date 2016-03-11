@@ -147,7 +147,7 @@ class Sdf3ModelParser:
 
 
 
-## Object class for extracting all ports from a leaf process and yeld
+## Object class for extracting all ports from an actor and yeld
 ## them as lists of tuples of type \c (port_name, information)
 class getActorPortList(object):
 	## @var in_ports

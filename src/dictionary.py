@@ -148,8 +148,9 @@ CONFIG_TEXT = '' +\
 	'# The tool has XPath 1.0 support, limited to ForSyDe usage. For a\n' +\
 	'# tutorial on how to build lable queries, please consult f2dot\'s\n' +\
 	'# web page.\n'+\
+	'# OBS: for SDF3 graphs, the leafs are actors.\n'+\
 	'\n' +\
-	LEAF_INFO_TAGS + '={ ./@name } {./process_constructor/@name }\n' +\
+	LEAF_INFO_TAGS + '={ ./@name } \n' +\
 	'\n' +\
 	'# ' + COMPOSITE_INFO_TAGS + ' decides what information should appear in the\n' +\
 	'# composite process subgraphs. This information is extracted from the\n' +\
@@ -166,6 +167,7 @@ CONFIG_TEXT = '' +\
 	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
 	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
 	'# to build lable queries, please consult f2dot\'s web page.\n' +\
+	'# OBS: for SDF3 graphs, the LEAF_PORTs are actor ports.\n'+\
 	'\n' +\
 	LEAF_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
@@ -184,6 +186,7 @@ CONFIG_TEXT = '' +\
 	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
 	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
 	'# to build lable queries, please consult f2dot\'s web page.\n' +\
+	'# OBS: for SDF3 graphs, the signals are called channels.\n'+\
 	'\n' +\
 	SIGNAL_INFO_TAGS + '=\n' +\
 	'\n' +\

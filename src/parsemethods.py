@@ -70,7 +70,7 @@ logger = logging.getLogger('f2dot.parsermethods')
 # @param list $queryList
 #        List of querries, as defined by the user
 # @return A list of lists if pieces of information
-# @see f2dot.utils.parseLableTags
+# @see parseLableTags
 # @see prettyPrintLables
 def getXpathList(node, queryList):
 	label = []
@@ -86,9 +86,28 @@ def getXpathList(node, queryList):
 		label.append([list(row) for row in izip_longest(*returnList, fillvalue=u'')])
 	return label
 
+## Function that receives an list of XPath queries, as defined by the
+## user, and returns the first piece of information extracted as a string.
+# @param Node $node
+#        \c xml.dom.Node representing the root for the XPath query
+# @param list $query
+#        List of querries, as defined by the user
+# @return A list of lists if pieces of information
+# @see getXpathList
 def getXpathStr(node, query):
 	return str(getXpathList(node, query)[0][0][0]);
 
+
+## Function that pre-extracts a set of varialbes through XPath querries and 
+## replaces it in another list of queries calling getXpathList
+# @param Node $node
+#        \c xml.dom.Node representing the root for the XPath query
+# @param list $query
+#        List of querries, containing variables
+# @param str $var
+#        Querry for pre-extracting the variable
+# @return A list of lists if pieces of information
+# @see getXpathList
 def getXpathVarList(node, queryList, var=''):
 	if var:	
 		variable = getXpathStr(node, [var])
