@@ -45,7 +45,7 @@ DEFAULT_CONFIG_FILENAME="f2dot.conf"
 ID_SEP='@'
 VAR_START='<<'
 VAR_STOP='>>'
-PAT_VAR='$1'
+VAR_SEP='&&'
 PAT_START='{'
 PAT_STOP='}'
 PAT_SEP='&&'
@@ -88,6 +88,12 @@ TARGET_ATTR='target'
 SOURCE_PORT_ATTR='source_port'
 TARGET_PORT_ATTR='target_port'
 
+## @name SDF3-XML convention
+SDF_TAG='sdf'
+SDF_APPLICATION_GRAPH_TAG='sdf'
+SDF_ACTOR_TAG='actor'
+SDF_PORT_TAG='port'
+SDF_CHANNEL_TAG='channel'
 
 ## @name default config file text
 CONFIG_TEXT = '' +\
@@ -142,8 +148,9 @@ CONFIG_TEXT = '' +\
 	'# The tool has XPath 1.0 support, limited to ForSyDe usage. For a\n' +\
 	'# tutorial on how to build lable queries, please consult f2dot\'s\n' +\
 	'# web page.\n'+\
+	'# OBS: for SDF3 graphs, the leafs are actors.\n'+\
 	'\n' +\
-	LEAF_INFO_TAGS + '={ ./@name } {./process_constructor/@name }\n' +\
+	LEAF_INFO_TAGS + '={ ./@name } \n' +\
 	'\n' +\
 	'# ' + COMPOSITE_INFO_TAGS + ' decides what information should appear in the\n' +\
 	'# composite process subgraphs. This information is extracted from the\n' +\
@@ -160,6 +167,7 @@ CONFIG_TEXT = '' +\
 	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
 	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
 	'# to build lable queries, please consult f2dot\'s web page.\n' +\
+	'# OBS: for SDF3 graphs, the LEAF_PORTs are actor ports.\n'+\
 	'\n' +\
 	LEAF_PORT_INFO_TAGS + '=\n' +\
 	'\n' +\
@@ -178,6 +186,7 @@ CONFIG_TEXT = '' +\
 	'# grammar having the rules presented for ' + LEAF_INFO_TAGS + '.  The tool has\n' +\
 	'# XPath 1.0 support, limited to ForSyDe usage. For a tutorial on how\n' +\
 	'# to build lable queries, please consult f2dot\'s web page.\n' +\
+	'# OBS: for SDF3 graphs, the signals are called channels.\n'+\
 	'\n' +\
 	SIGNAL_INFO_TAGS + '=\n' +\
 	'\n' +\

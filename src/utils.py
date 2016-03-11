@@ -113,20 +113,22 @@ def computeBackground(coeffs, level):
 # @see prettyPrintLables
 # @param str $string Queries for extracting information from the XML
 #        model
-# @return A list of lists of queries of type [[row1, ...], [row2, ...], ...]
+# @return A list of querries and a list of lists of queries of type [[row1, ...], [row2, ...], ...]
 def parseLableTags(string):
+	variables = []
+	querries = []
 	pat_s = '\s*\\' + dic.VAR_START + '([^' + dic.VAR_STOP + ']*)\\' \
 			+ dic.VAR_STOP + '\s*'
 	pat = re.compile(pat_s)
-	var = pat.findall(string)
+	variables = pat.findall(string)
 
-	lst = []
 	pat_s = '\s*\\' + dic.PAT_START + '([^' + dic.PAT_STOP + ']*)\\' \
 			+ dic.PAT_STOP + '\s*'
 	pat = re.compile(pat_s)
 	for line in pat.findall(string):
-		lst.append(line.split(dic.PAT_SEP))
-	return var,lst
+		querries.append(line.split(dic.PAT_SEP))
+
+	return variables,querries
 
 ## Reverse replace. Replaces the last number of occurrences of a
 ## string with another string

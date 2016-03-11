@@ -23,16 +23,21 @@ python f2dot -h
 
 ## Version history
 
+### f2dot-0.1.3
+ * XPath lable extraction querries now support variables. Variable values 
+   are pre-fetched and replaced in the main querries.
+ * Defined custom markup for variable querries, still based on XPath.
+ * added support for [SDF3](http://www.es.ele.tue.nl/sdf3/) graphs
+ * parsing decision (ForSyDe or SDF3) based on the input XML header.
+
 ### f2dot-0.1.2
  * added the option to customize which processes to be clustered by
    the main parser (changes in the logic of the code)
  * fixed vector/array/tuple signals bug
- * added full support for XPath queries by including [py-dom-xpath
-   library](https://code.google.com/p/py-dom-xpath/) -- MIT License
+ * added full support for XPath queries by including [py-dom-xpath library]
+   (https://code.google.com/p/py-dom-xpath/) -- MIT License
  * coded the parser methods to extract queries which return both
-   node-sets and unicode values. Thus, one can write custom labels
-   (names) through appropriate XPath queries and write node tags or
-   attribute names instead of just attribute values 
+   node-sets and unicode values. 
  * changed the project structure to align to python distribution
    conventions
  * gave up the C++-like class inheritance topology, since it is not

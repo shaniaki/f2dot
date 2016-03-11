@@ -40,7 +40,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
 import xml.dom.minidom as xmlparser
-import pygraphviz as pgv
 import os
 import logging
 import utils
@@ -58,8 +57,8 @@ class ForsydeModelParser:
 	# @param Settings $settings The f2dot.settings.Settings object
 	#        holding the run-time settings
 	def __init__(self, settings): 
-		self.logger = logging.getLogger('f2dot.parser')
-		self.logger.debug('Initializing the parser...')
+		self.logger = logging.getLogger('f2dot.forsydeparser')
+		self.logger.debug('Initializing the ForSyDe parser...')
 		self.set = settings
 		if settings.dir == "TB":
 			self.vertical = True
@@ -79,13 +78,10 @@ class ForsydeModelParser:
 	## Function to parse a ForSyDe-XML model and plot a DOT graph,
 	## according to the settings.
 	# @param ForsydeModelParser $self The object pointer
-	def plotModel(self):
-		G = pgv.AGraph(directed=True, rankdir=self.set.dir,
-                       fontname='Helvetica', strict=False, overlap='prism',
-                       splines='true')
+	def plotModel(self, graph, xmldoc):
 
 		bgColor = utils.computeBackground(self.set.compColorCoeffs,1)
-		frame = G.subgraph( \
+		frame = graph.subgraph( \
 			name="cluster_" + self.set.inFile, \
 			label = self.set.rootProcess, \
 			style = 'filled, rounded', \
@@ -94,16 +90,10 @@ class ForsydeModelParser:
 
 		self.logger.info('Starting the parser on process network "' +
                          self.set.rootProcess + '"...')
-		self.__parseXmlFile(self.set.inPathAndFile, frame, self.set.rootProcess, 2)
-	
-		G.write(self.set.outPathAndFile)
-		G.draw(path=self.set.outPathAndFile, format=self.set.format,
-               prog=self.set.program)
-		self.logger.info('Process network plotted in ' +
-                         self.set.outPathAndFile)
+		self.__parseXmlFile(xmldoc, frame, self.set.rootProcess, 2)
 
-	def __parseXmlFile(self, xmlFile, graph, parentId, level):
-		root = xmlparser.parse(xmlFile)
+
+	def __parseXmlFile(self, root, graph, parentId, level):
 		self.logger.debug("Parsing <"+ parentId + ">")
 
 		graph.add_node('dummy',style='invisible')
@@ -137,7 +127,7 @@ class ForsydeModelParser:
 	
 					#build composite process information
 					list_of_ports = getCompositePortList(composite, self.set)
-					processLabel = buildRecord(compositeInfo, list_of_ports)
+					processLabel = buildRecord(compositeInfo.label, list_of_ports)
 					if not list_of_ports.in_ports and self.set.clusterSources:
 						clusterName = 'sources'
 					elif not list_of_ports.out_ports and self.set.clusterSinks:
@@ -159,7 +149,7 @@ class ForsydeModelParser:
 
 				#else 
 				#build composite process information
-				xmlFile = os.path.join(self.set.inPath, compositeInfo.component_name) + '.xml'
+				xmlRoot = xmlparser.parse(os.path.join(self.set.inPath, compositeInfo.component_name) + '.xml')
 				bgColor = utils.computeBackground(self.set.compColorCoeffs,level)
 				if self.set.clusterOthers:
 					clusterName = 'others'
@@ -178,7 +168,7 @@ class ForsydeModelParser:
 				self.logger.debug( 'Found composite process ' + compositeInfo.ID 
 									+ ' in <' + parentId 
 									+ '>. Building a subgraph in cluster ' + clusterName)
-				self.__parseXmlFile(xmlFile, frame, compositeInfo.ID, level + 1)
+				self.__parseXmlFile(xmlRoot, frame, compositeInfo.ID, level + 1)
 
 			#child leaf processes
 			for leaf in pn.getElementsByTagName(dic.LEAF_PROCESS_TAG):
@@ -187,7 +177,7 @@ class ForsydeModelParser:
 				leafInfo = getBasicLeafInfo(leaf, parentId, self.set)
 				list_of_leaves.append(leafInfo.ID)
 				list_of_ports = getLeafPortList(leaf, self.set)
-				processLabel = buildRecord(leafInfo, list_of_ports)
+				processLabel = buildRecord(leafInfo.label, list_of_ports)
 				if not list_of_ports.in_ports and self.set.clusterSources:
 					clusterName = 'sources'
 				elif not list_of_ports.out_ports and self.set.clusterSinks:
@@ -333,5 +323,288 @@ class ForsydeModelParser:
 		# flush the root node
 		del root
 
+## Object class for extracting composite process information from the
+## ForSyDe-XML model and yeald it as a structure.
+class getBasicCompositeInfo(object):
+	## @var name
+	#       The name of this process (str)
+	## @var component_name 
+	#       The component name (str)
+	## @var ID
+	#       The generated unique ID (str)
+	## @var label
+	#       The list of extracted information from the XML file, based
+	#       on the provided XPath queries queries.
+	#  @see f2dot.utils.parseLableTags
+	#  @see prettyPrintLables
+	#  @see getXpathList
+
+	## Class constructor.
+    # @param $self
+    #        The object pointer
+    # @param Node $node
+    #        The \c xml.dom.Node object representing the composite
+    #        process
+    # @param str $parentID
+    #        The unique ID of its parent process
+    # @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, node, parentID, settings):
+		self.name = node.getAttribute(dic.NAME_ATTR)
+		self.component_name = node.getAttribute(dic.COMPONENT_ATTR)
+		self.ID = parentID + dic.ID_SEP + self.name
+		var1, exp = settings.compTags		
+		self.label = getXpathVarList(node, exp, var1)
+		logger.debug('Labels for composite process <' + self.ID + '>:\n ' 
+				+ str(self.label))
+
+	
+## Object class for extracting leaf process information from the
+## ForSyDe-XML model and yeald it as a structure.
+class getBasicLeafInfo(object):
+	## @var name
+	#       The name of this process (str)
+	## @var ID
+	#       The generated unique ID (str)
+	## @var label
+	#       The list of extracted information from the XML file, based
+	#       on the provided XPath queries queries.
+    #  @see f2dot.utils.parseLableTags
+	#  @see prettyPrintLables
+	#  @see getXpathList
+
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Node $node
+    #        The \c xml.dom.Node object representing the composite
+	#        process
+    # @param str $parentID
+    #        The unique ID of its parent process
+    # @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, node, parentID, settings):
+		context = xpath.XPathContext(node)
+		self.name = node.getAttribute(dic.NAME_ATTR)
+		self.ID = parentID + dic.ID_SEP + self.name
+		var1, exp = settings.leafTags		
+		self.label = getXpathVarList(node, exp, var1)
+		logger.debug('Labels for leaf process <' + self.ID + '>: \n '
+                     + str(self.label))
+
+
+## Object class for extracting port information from the ForSyDe-XML
+## model and yeald it as a structure.
+class getBasicPortInfo(object):
+	## @var name
+	#       The name of this process (str)
+	## @var ID
+	#       The generated unique ID (str)
+	## @var label
+	#       The list of extracted information from the XML file, based on
+	#       the provided XPath queries queries.
+    #  @see f2dot.utils.parseLableTags
+	#  @see prettyPrintLables
+	#  @see getXpathList
+
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Node $node
+    #        The \c xml.dom.Node object representing the composite
+    #        process
+    # @param str $parentID
+    #        The unique ID of its parent process
+	# @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, node, parentID, settings):
+		self.name = node.getAttribute(dic.NAME_ATTR)
+		self.ID = parentID + dic.ID_SEP + self.name
+		self.direction = node.getAttribute(dic.DIRECTION_ATTR)
+		self.bound_process = parentID + dic.ID_SEP + \
+                             node.getAttribute(dic.BOUND_PROCESS_ATTR)
+		self.bound_port = node.getAttribute(dic.BOUND_PORT_ATTR)
+		var1, exp  = settings.portCompTags
+		self.label = getXpathVarList(node, exp, var1)
+		logger.debug('Labels for port <' + self.ID + '>: \n ' +
+                     str(self.label))
+
+
+## Object class for extracting signal information from the ForSyDe-XML
+## model and yeald it as a structure.
+class getBasicSignalInfo(object):
+	## @var name
+	#       The name of this process (str)
+	## @var ID
+	#       The generated unique ID (str)
+	## @var label
+	#       The list of extracted information from the XML file, based
+	#       on the provided XPath queries queries.
+    #  @see f2dot.utils.parseLableTags
+	#  @see prettyPrintLables
+	#  @see getXpathList
+	
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Node $node
+    #        The \c xml.dom.Node object representing the composite
+    #        process
+    # @param str $parentID
+    #        The unique ID of its parent process
+    # @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, node, parentID, settings):
+		self.name = node.getAttribute(dic.NAME_ATTR)
+		self.source = parentID + dic.ID_SEP + \
+                      node.getAttribute(dic.SOURCE_ATTR)
+		self.source_port = node.getAttribute(dic.SOURCE_PORT_ATTR)
+		self.target = parentID + dic.ID_SEP + \
+                      node.getAttribute(dic.TARGET_ATTR)
+		self.target_port = node.getAttribute(dic.TARGET_PORT_ATTR)
+		var1, exp = settings.signalTags		
+		self.label = getXpathVarList(node, exp, var1)
+		logger.debug('Labels for signal %s:%s->%s:%s\n  %s', \
+					 self.source, self.source_port, self.target, \
+                     self.target_port, self.label)
+
+
+## Object class for extracting all ports from a leaf process and yeld
+## them as lists of tuples of type \c (port_name, information)
+class getLeafPortList(object):
+	## @var in_ports
+	#       List of input ports, represented as tuples of (port_name,
+	#       information) (lst(tuple))
+	## @var out_ports
+	#       List of input ports, represented as tuples of (port_name,
+	#       information) (lst(tuple))
+
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Node $parentNode
+    #        The \c xml.dom.Node object representing the (parent) leaf
+    #        process
+    # @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, parentNode, settings):
+		self.in_ports = []
+		self.out_ports = []
+		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
+			port_name = port.getAttribute(dic.NAME_ATTR)
+			port_dir  = port.getAttribute(dic.DIRECTION_ATTR)
+			var1, exp = settings.portLeafTags
+			info = getXpathVarList(port, exp, var1)
+			logger.debug('Got port info:' + str(info))
+			# build port lists having tuples of name and info
+			if port_dir == dic.INPUT_DIR:
+				self.in_ports.append((port_name, info))
+			else:
+				self.out_ports.append((port_name, info))
+
+## Object class for extracting all ports from a leaf process and yeld
+## them as lists of tuples of type \c (port_name, information)
+class getCompositePortList(object):
+	## @var in_ports
+	#       List of input ports, represented as tuples of (port_name,
+	#       information) (lst(tuple))
+	## @var out_ports
+	#       List of input ports, represented as tuples of (port_name,
+	#       information) (lst(tuple))
+
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Node $parentNode
+    #        The \c xml.dom.Node object representing the (parent) composite
+    #        process
+    # @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+	def __init__(self, parentNode, settings):
+		self.in_ports = []
+		self.out_ports = []
+		for port in parentNode.getElementsByTagName(dic.PORT_TAG):		
+			port_name = port.getAttribute(dic.NAME_ATTR)
+			port_dir = port.getAttribute(dic.DIRECTION_ATTR)
+			var1, exp = settings.portCompTags				
+			self.label = getXpathVarList(port, exp, var1)
+			# build port lists having tuples of name and info
+			if port_dir == dic.INPUT_DIR:
+				self.in_ports.append((port_name, info))
+			else:
+				self.out_ports.append((port_name, info))
+
+## Object class acting as a dynamic dictionary for creating and
+## addressing the clustes chosen by the user.
+class Clusters(object):
+	## @var clusters
+	#       Dynamic dictionary storing just the clusters specified by
+	#       the user
+
+	## Class constructor.
+	# @param $self
+    #        The object pointer
+	# @param Settings $settings
+    #        The f2dot.settings.Settings object holding the run-time
+    #        settings
+    # @param DiGraph $graph
+    #        The pygraphviz.DiGraph object representing the subgraph
+    #        which will include these clusters
+    # @param list $listOfNames
+    #        A list of cluster names which will be the keys for their
+    #        addressing
+	def __init__(self, settings, graph, listOfNames):
+		self.clusters = {}
+		self.clusters['parent'] = graph
+		for name in listOfNames:
+			c = graph.subgraph(name= str(graph.name) + name, label='' )
+			self.clusters[name] = c
+
+	## Method for adding nodes to this cluster.
+	def add_node(self,
+                 clusterName,
+                 node,
+                 label='',
+                 shape='record',
+                 color='black',
+                 fillcolor='transparent',
+                 style='rounded,filled',
+                 fontname='Helvetica',
+                 fontsize='12',
+                 width='',
+                 height='',
+                 orientation='90'):
+		self.clusters[clusterName].add_node( \
+			node, \
+			label = label, \
+			shape = shape, \
+			color = color, \
+			fillcolor = fillcolor, \
+			style = style, \
+			fontname = fontname, \
+			width = width, 
+			height = height, 
+			orientation = orientation, 
+			fontsize = fontsize)
+	
+	## Method for including subgraphs to this cluster.
+	def subgraph(self,
+                 clusterName,
+                 name,
+                 label='',
+                 style='',
+                 color='') :
+		frame = self.clusters[clusterName].subgraph( \
+			name = name, \
+			label = label, \
+			style = style, \
+			color = color)
+		return frame
 
 	
