@@ -23,6 +23,15 @@ python f2dot -h
 
 ## Version history
 
+### f2dot-0.2.0
+ * Major modification in the management of settings
+ * Simpler, more robust 'Settings' class, unaware of user-defined parameters.
+ * Adding support for a new format means writing an xml parser and providing
+   a `<mode>.conf` file in `src/config`. The config file contains both 
+   default values but also documentation and sanity check rules (as regex).
+ * parsers now access user-defined parameters as dictionary entries.
+
+
 ### f2dot-0.1.3
  * XPath lable extraction querries now support variables. Variable values 
    are pre-fetched and replaced in the main querries.

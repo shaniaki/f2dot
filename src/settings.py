@@ -135,7 +135,7 @@ class Settings:
 	# @param str $path 
 	#        The directory where the configuration file should be
 	# @param bool $force 
-	#        \cTrue to overwrites existing configuration file
+	#        \cTrue to overwrite existing configuration file
 	# @return A string with the absolute path to the config file 
 	def createConfFile(self, path, force=False):
 		confFile=os.path.join(path, self.configFileName)
@@ -153,25 +153,12 @@ class Settings:
 		utils.copySection(os.path.join(self.runPath,'config',self.configFileName), confFile, '[default settings]')
 		return confFile
 
+	## Method to enable treating a Settings object as a dictionary.
+	# @param str $key 
+	#        the setting name, as defined in the .conf file
+	# @return The value of the config parameter with the name 'key' 
 	def __getitem__(self, key):
 		return self.settingDict[key]
-
-	def __setGeneralSettings(self, args):
-		if args.dir:
-			self.settingDict['DIRECTION']=args.dir
-		else:
-			self.settingDict['DIRECTION']='TB'
-		if args.format:
-			self.settingDict['FORMAT']=args.format
-		else:
-			self.settingDict['FORMAT']='dot'
-	 	if args.prog:
-			self.settingDict['PROG']=args.prog
-		else:
-			self.settingDict['PROG']='dot'
-		self.constraintDict['DIRECTION']=r'LR|TB'
-		self.constraintDict['FORMAT']=r'canon|cmap|cmapx|cmapx_np|dia|dot|fig|gd|gd2|gif|hpgl|imap|imap_np|ismap|jpe|jpeg|jpg|mif|mp|pcl|pdf|pic|plain|plain-ext|png|ps|ps2|svg|svgz|vml|vmlz|vrml|vtx|wbmp|xdot|xlib'
-		self.constraintDict['PROG']=r'neato|dot|twopi|circo|fdp|nop'
 		
 	## Prints the current settings
 	# @param Settings $self The object pointer
