@@ -46,6 +46,13 @@ import re
 import logging
 from itertools import izip_longest
 
+VAR_START='<<'
+VAR_STOP='>>'
+VAR_SEP='&&'
+PAT_START='{'
+PAT_STOP='}'
+PAT_SEP='&&'
+
 logger = logging.getLogger('f2dot.parsermethods')
 
 
@@ -170,4 +177,28 @@ def buildRecord(processInfoLabel, listOfPorts):
 	record = record.rstrip('|')		
 	record = record + ' } }'
 	return record
+
+
+
+## Parses the label queries defined by the custom layout grammar found
+## in the configuration file
+# @see prettyPrintLables
+# @param str $string Queries for extracting information from the XML
+#        model
+# @return A list of querries and a list of lists of queries of type [[row1, ...], [row2, ...], ...]
+def parseLableTags(string):
+	variables = []
+	querries = []
+	pat_s = '\s*\\' + VAR_START + '([^' + VAR_STOP + ']*)\\' \
+			+ VAR_STOP + '\s*'
+	pat = re.compile(pat_s)
+	variables = pat.findall(string)
+
+	pat_s = '\s*\\' + PAT_START + '([^' + PAT_STOP + ']*)\\' \
+			+ PAT_STOP + '\s*'
+	pat = re.compile(pat_s)
+	for line in pat.findall(string):
+		querries.append(line.split(PAT_SEP))
+
+	return variables,querries
 

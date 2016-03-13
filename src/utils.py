@@ -85,6 +85,32 @@ def getFileName(fname):
 	name, ext = strBeforeAfter(fname, '.')
 	return name
  
+
+def getConfigInSection(infile, section=''):
+	lines=[]
+	with open(infile) as input_file:
+		for line in input_file:
+			if line.strip() == section or not section:
+				break
+		for line in input_file:
+			if line.strip().startswith("[") and section:
+				break
+			if not line.strip().startswith("#") and line.strip():
+				lines.append(line.strip())
+	return lines
+
+def copySection(input_file, output_file, section, write_type='a'):
+	lines=[]
+	with open(input_file) as infile, open(output_file, write_type) as outfile:
+		for line in infile:
+			if line.strip() == section:
+				break
+		for line in infile:
+			if line.strip().startswith("["):
+				break
+			outfile.write(line)
+
+
 ## Returns all first child nodes of a given XML node that have a
 ## specific tag
 # @param Node $node The parent node (xml.dom.Node object)
@@ -103,32 +129,11 @@ def getChildrenByTag(node, tagName):
 # @return The hex value of the background color (str)
 def computeBackground(coeffs, level):
 	bgHex = "#" \
-		+ re.sub('0x','',hex(255 - coeffs[0] * level)) \
-		+ re.sub('0x','',hex(255 - coeffs[1] * level)) \
-		+ re.sub('0x','',hex(255 - coeffs[2] * level))
+		+ re.sub('0x','',hex(255 - int(coeffs[0]) * level)) \
+		+ re.sub('0x','',hex(255 - int(coeffs[1]) * level)) \
+		+ re.sub('0x','',hex(255 - int(coeffs[2]) * level))
 	return bgHex
 
-## Parses the label queries defined by the custom layout grammar found
-## in the configuration file
-# @see prettyPrintLables
-# @param str $string Queries for extracting information from the XML
-#        model
-# @return A list of querries and a list of lists of queries of type [[row1, ...], [row2, ...], ...]
-def parseLableTags(string):
-	variables = []
-	querries = []
-	pat_s = '\s*\\' + dic.VAR_START + '([^' + dic.VAR_STOP + ']*)\\' \
-			+ dic.VAR_STOP + '\s*'
-	pat = re.compile(pat_s)
-	variables = pat.findall(string)
-
-	pat_s = '\s*\\' + dic.PAT_START + '([^' + dic.PAT_STOP + ']*)\\' \
-			+ dic.PAT_STOP + '\s*'
-	pat = re.compile(pat_s)
-	for line in pat.findall(string):
-		querries.append(line.split(dic.PAT_SEP))
-
-	return variables,querries
 
 ## Reverse replace. Replaces the last number of occurrences of a
 ## string with another string

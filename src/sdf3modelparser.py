@@ -38,11 +38,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-
 import os
 import logging
 import utils
-import dictionary as dic
+import xml.dom.minidom as xmlparser
 from parsemethods import *
 
 ## Controller class for parsing SDF3-XML models.
@@ -59,7 +58,7 @@ class Sdf3ModelParser:
 		self.logger = logging.getLogger('f2dot.sdf3parser')
 		self.logger.debug('Initializing the parser...')
 		self.set = settings
-		if settings.dir == "TB":
+		if settings['DIRECTION'] == "TB":
 			self.vertical = True
 		else:
 			self.vertical = False
@@ -77,34 +76,38 @@ class Sdf3ModelParser:
 	## Function to parse a ForSyDe-XML model and plot a DOT graph,
 	## according to the settings.
 	# @param Sdf3ModelParser $self The object pointer
-	def plotModel(self, graph, xmldoc):
-		appName = xmldoc.getElementsByTagName(dic.SDF_APPLICATION_GRAPH_TAG)[0].getAttribute('name')
+	def plotModel(self, graph):
+		xmldoc = xmlparser.parse(self.set.inPathAndFile)
+		print xmldoc.childNodes[0].nodeName
+		if not xmldoc.childNodes[0].nodeName == 'sdf3':
+			self.logger.error('File is not SDF3! Re-run f2dot with the proper -t command.')
+			os._exit(1)
+
+		appName = xmldoc.getElementsByTagName('sdf')[0].getAttribute('name')
 		self.logger.debug("Parsing <"+ appName + ">")
 
-		bgColor = utils.computeBackground(self.set.compColorCoeffs,1)
 		frame = graph.subgraph( \
 			name="cluster_" + self.set.inFile, \
 			label = appName, \
 			style = 'filled, rounded', \
-			color = bgColor, \
+			color = self.set['APPLICATION_BOX_COLOR'], \
 			fontsize = '13')
 
-		self.logger.info('Starting the parser on process network "' +
-                         self.set.rootProcess + '"...')
+		self.logger.info('Starting the parser for application graph "' + appName + '"...')
 		self.__parseXmlFile(xmldoc, frame)
 	
 	def __parseXmlFile(self, root, graph):
 		graph.add_node('dummy',style='invisible')
 
 		# sdf graph
-		for sdf in root.getElementsByTagName(dic.SDF_TAG):
+		for sdf in root.getElementsByTagName('sdf'):
 			list_of_actors = []
 
 			#child actors
-			for actor in sdf.getElementsByTagName(dic.SDF_ACTOR_TAG):
+			for actor in sdf.getElementsByTagName('actor'):
 
 				actorId    = actor.getAttribute('name')
-				var1, exp  = self.set.leafTags                  # TODO: different labels for different formats
+				var1, exp  = parseLableTags(self.set['ACTOR_TAGS'])
 				actorLabel = getXpathVarList(actor, exp, var1)
 				logger.debug('Labels for leaf process <' + actorId + '>: ' + str(actorLabel))
 
@@ -115,14 +118,14 @@ class Sdf3ModelParser:
 				# add actor node to the graph
 				graph.add_node(actorId, shape='record',\
                     label = nodeLabel, style='rounded,filled',  fontname='Helvetica', fontsize='12',\
-                    fillcolor = self.set.leafColor)
+                    fillcolor = self.set['ACTOR_BASE_COLOR'])
 
 			self.logger.debug( 'Found ' + str(len(list_of_actors)) + ' actors' 
 				+ ' \n\t' + str(list_of_actors))
 
 			
 			#channes child nodes
-			for channel in sdf.getElementsByTagName(dic.SDF_CHANNEL_TAG):
+			for channel in sdf.getElementsByTagName('channel'):
 				channelInfo = getBasicChannelInfo(channel, self.set)
 
 				if self.vertical:
@@ -169,15 +172,15 @@ class getActorPortList(object):
 	def __init__(self, parentNode, settings):
 		self.in_ports = []
 		self.out_ports = []
-		for port in parentNode.getElementsByTagName(dic.SDF_PORT_TAG):		
+		for port in parentNode.getElementsByTagName('port'):		
 			port_name = port.getAttribute('name')
 			port_dir  = port.getAttribute('type')
-			var1, exp = settings.portLeafTags
+			var1, exp = parseLableTags(settings['PORT_TAGS'])	
 			info = getXpathVarList(port, exp, var1)
 			logger.debug('Labels for port <' + port_name + '>: ' +
                      str(info))
 			# build port lists having tuples of name and info
-			if port_dir == dic.INPUT_DIR:
+			if port_dir == 'in':
 				self.in_ports.append((port_name, info))
 			else:
 				self.out_ports.append((port_name, info))
@@ -210,7 +213,7 @@ class getBasicChannelInfo(object):
 		self.source_port = node.getAttribute('srcPort')
 		self.target = node.getAttribute('dstActor')
 		self.target_port = node.getAttribute('dstPort')
-		var1, exp = settings.signalTags		
+		var1, exp = parseLableTags(settings['CHANNEL_TAGS'])			
 		self.label = getXpathVarList(node, exp, var1)
 		logger.debug('Labels for channel %s:%s->%s:%s\n  %s', \
 					 self.source, self.source_port, self.target, \
