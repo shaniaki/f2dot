@@ -170,7 +170,8 @@ class Settings:
 			+ '\t* inFile : ' + self.inFile + '\n' \
 			+ '\t* outPath : ' + self.outPath + '\n' \
 			+ '\t* outPathAndFile : ' + self.outPathAndFile + '\n' \
-			+ '\t* confFile : ' + self.confFile + '\n' 
+			+ '\t* confFileName : ' + self.outPathAndFile + '\n' \
+			+ '\t* confFile : ' + self.configFileName + '\n' 
 		for key, value in self.settingDict.iteritems():	
 			msg = msg + '\t* ' + key + " : " + value + '\n'
 		return msg
