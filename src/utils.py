@@ -38,7 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
 import re
-import dictionary as dic
 
 ## Splits a string when it finds a pattern and returns the string
 #  before and the one after

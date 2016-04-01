@@ -45,7 +45,6 @@ import os
 import re
 import utils
 import logging
-import dictionary as dic
 
 
 ## Model class for storing configuration  parameters
