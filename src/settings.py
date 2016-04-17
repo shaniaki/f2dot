@@ -126,6 +126,10 @@ class Settings:
 						continue
 			self.settingDict[tag] = value
 
+		if args.format:
+			self.settingDict['FORMAT'] = args.format
+		if args.prog:
+			self.settingDict['PROG'] = args.prog       
 		self.outPathAndFile = os.path.join(self.outPath, utils.getFileName(self.inFile) + '.' + self.settingDict['FORMAT'])
 		self.logger.debug('Runtime configuration successful')
 
